@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        @media print {
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+            body {
+                font-family: 'Roboto', sans-serif;
+                line-height: 1.3;
+                font-size: 14px; /* Tamaño de fuente ajustado a 12px */
+                margin: 0;
+            }
+        }
+        /* Estilo para pantalla */
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.3;
+            font-size: 12px; /* Tamaño de fuente ajustado a 12px */
+            margin: 10px;
+        }
+        p {
+            margin: 6px 0;
+        }
+        strong {
+            font-weight: 700;
+        }
+        .center-text {
+            text-align: center;
+            line-height: 1.2;
+        }
+        .right-text {
+            text-align: right;
+            margin-right: 1cm;
+        }
+        
+    </style>
+    <title>Document</title>
+</head>
+
+<div style="position: relative; text-align: right; margin-right: 1cm; margin-top: 1cm;">
+    <!-- Contenedor centrado dentro del bloque a la derecha -->
+    <div style="display: inline-block; text-align: center;">
+        <!-- Logo centrado con menos espacio debajo -->
+        <img src="{{ logo_path }}" alt="Logo" style="width: 100px; margin-bottom: 5px;">
+        
+        <!-- Texto centrado con menor interlineado -->
+        <div style="font-size: 10px; line-height: 1.1;">
+            <p>FUNDACION DE ALTOS ESTUDIOS</p>
+            <p>EN&nbsp;&nbsp;&nbsp; &nbsp;CIENCIAS&nbsp;&nbsp; &nbsp;COMERCIALES</p>
+            <p><strong>Patrocinada por la Asociaci&oacute;n</strong></p>
+            <p><strong>Dirigentes de Empresa</strong></p>
+            <p>Instituto Privado Incorporado</p>
+            <p>A la Ense&ntilde;anza Oficial ( A-824)</p>
+        </div>
+    </div>
+</div>
+
+
+
+
+<p>&nbsp;</p>
+<div class="right-text">
+    Buenos Aires, 15 de Octubre de 2024
+</div>
+
+<p>&nbsp;</p>
+<p>V I S T O:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;La necesidad de designar a los Profesores que tendr&aacute;n a su cargo el dictado de los cursos y ,</p>
+<p>C O N S I D E R A N D O:</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Que los mismos deben cubrirse con Profesores que se hagan cargo por el tiempo de duraci&oacute;n del curso y hasta el examen final a los alumnos</p>
+<p>Que las designaciones deben realizarse con car&aacute;cter urgente,</p>
+<p>El Rector de la&nbsp; &nbsp;<strong>FUNDACION DE ALTOS ESTUDIOS EN CIENCIAS COMERCIALES</strong></p>
+<p>R E S U E L V E:</p>
+<p>Primero: Designar a partir del &nbsp;<strong>15 de Octubre de 2024&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;</strong>hasta &nbsp;<strong>15 de Octubre de 2024</strong></p>
+<p>al&nbsp;&nbsp;&nbsp;&nbsp; Sr/a. {{ docente }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;DNI&nbsp; &nbsp;{{ DNI }} como titular (interino)&nbsp;&nbsp; &nbsp;en la carrera de</p>
+<p>{{ carrera }} en la asignatura, {{ materia }} de {{ año }}&ordm; a&ntilde;o divisi&oacute;n {{ division }} el d&iacute;a  {{ dia }}, en el horario de {{ horario }}</p>
+<p>&nbsp;</p>
+<p>Segundo: Otorgar una remuneraci&oacute;n basica igual a la que perciben por ese cargo los profesores ordinarios de igual jerarquia</p>
+<p>&nbsp;</p>
+<p>Tercero: Toda evaluaci&oacute;n que se le efect&uacute;e al docente sobre su desempe&ntilde;o en el dictado de la materia asignada, ser&aacute; puesta a su disposici&oacute;n para su conocimiento y posterior notificaci&oacute;n de los resultados de la misma.</p>
+<p>&nbsp;</p>
+<p>Cuarto: Notifiquese al interesado, reg&iacute;strese, tome raz&oacute;n la Gerencia de Personal, la Secretar&iacute;a Acad&eacute;mica, Arch&iacute;vese</p>
+<p>&nbsp;</p>
+<p><strong>RESOLUCION Nro: &nbsp;001/2024</strong></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>------------------------</p>
+<p>&nbsp;Notificado</p>
+<p class="right-text">Juan Jose Ocampo</p>
+<p class="right-text"><em>RECTOR Suplente</em></p>
+<p>&nbsp;</p>
+<p>------------------------</p>
+<p>&nbsp;Aclaraci&oacute;n</p>
+<p class="right-text">Paraguay 1345</p>
+<p class="right-text">Tel.:</p>
+<p class="right-text">Buenos Aires - Argentina</p>
+<p class="right-text"><a href="http://www.lafundacion.edu.ar">www.lafundacion.edu.ar</a></p>
+<p class="right-text"><a href="mailto:info@lafundacion.edu.ar">e-mail: info@lafundacion.edu.ar</a></p>
+
+</body>
+</html>

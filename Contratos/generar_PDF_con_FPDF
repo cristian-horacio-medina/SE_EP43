@@ -1,0 +1,106 @@
+from fpdf import FPDF, XPos, YPos
+import pyodbc
+import os
+
+# def conectar():
+#     # Parámetros de conexión a SQL Server, obtenidos de las variables de entorno
+#     server = os.getenv('DB_SERVER')  # Servidor por defecto
+#     bd = os.getenv('DB_NAME')  # Nombre de la base de datos
+#     usuario = os.getenv('DB_USER')  # Usuario de la base de datos
+#     contrasena = os.getenv('DB_PASSWORD')  # Contraseña con valor por defecto
+
+#     try:
+#         # Establecer conexión a SQL Server
+#         conexion = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
+#                                   'SERVER=' + server + ';'
+#                                   'DATABASE=' + bd + ';'
+#                                   'UID=' + usuario + ';'
+#                                   'PWD=' + contrasena)
+#         cursor = conexion.cursor()
+#         return conexion, cursor  # Devolver tanto la conexión como el cursor
+#     except pyodbc.Error as e:
+#         print("Error al conectar a la base de datos:", e)
+#         return None, None  # Devolver None para ambos si hay error
+
+
+# def generar_pdf():
+#     conexion, cursor = conectar()
+
+#     if conexion is None or cursor is None:
+#         print("No se puede generar el PDF porque no hay conexión a la base de datos.")
+#         return
+
+#     cursor.execute("SELECT combo FROM al_docentes")
+#     datos = cursor.fetchall()
+
+#     pdf = FPDF()
+#     pdf.add_page()
+#     pdf.set_font("Arial", size=12)
+
+#     # Título del reporte
+#     pdf.cell(200, 10, txt="Reporte de Docentes", ln=True, align='C')
+
+#     # Encabezado
+#     pdf.cell(40, 10, "Nombre y Apellido", 1)
+#     pdf.cell(40, 10, "Apellido", 1)
+#     pdf.cell(40, 10, "Nombre", 1)
+#     pdf.ln()
+
+#     # Agregar datos de la consulta
+#     for row in datos:
+#         pdf.cell(40, 10, row.combo, 1)
+#         pdf.cell(40, 10, row.combo, 1)
+#         pdf.cell(40, 10, row.combo, 1)
+#         pdf.ln()
+
+#     pdf.output("reporte_docentes.pdf")
+#     print("PDF generado exitosamente.")
+
+#     cursor.close()
+#     conexion.close()
+
+# generar_pdf()
+
+# from fpdf import FPDF
+
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Helvetica', 'B', 12)
+        self.cell(0, 10, 'FUNDACION DE ALTOS ESTUDIOS EN CIENCIAS COMERCIALES', 0, 1, 'C')
+        self.cell(0, 10, 'Patrocinada por la Asociación Dirigentes de Empresa', 0, 1, 'C')
+        self.cell(0, 10, 'Instituto Privado Incorporado', 0, 1, 'C')
+        self.cell(0, 10, 'A la Enseñanza Oficial (A-824)', 0, 1, 'C')
+        self.ln(5)  # Espacio después del encabezado
+
+pdf = PDF()
+pdf.set_auto_page_break(auto=True, margin=15)
+pdf.set_left_margin(10)
+pdf.set_right_margin(10)
+pdf.add_page()
+
+# Establecer fuente para el cuerpo
+pdf.set_font('Helvetica', '', 10)
+
+contenido = [
+    "Buenos Aires, 15 de Octubre de 2024",
+    "",
+    "V I S T O :",
+    "La necesidad de designar a los Profesores que tendrán a su cargo el dictado de los cursos y,",
+    "",
+    "C O N S I D E R A N D O :",
+    "Que los mismos deben cubrirse con Profesores que se hagan cargo por el tiempo de duración del curso y hasta el examen final a los alumnos.",
+    "",
+    "R E S U E L V E :",
+    "Primero: Designar a partir del 15 de Octubre de 2024 hasta el 15 de Octubre de 2024 a la Sra. ALT...",
+    "RESOLUCIÓN Nro.: 001/2024",
+    "Juan José Ocampo",
+    "RECTOR Suplente"
+]
+
+# Usar multi_cell para cada línea de contenido
+for line in contenido:
+    pdf.multi_cell(0, 10, line, align='L')  # Asegúrate de que el ancho sea 0 para ajustar al margen
+
+# Generar el PDF
+pdf.output("documento_ajustado.pdf")
