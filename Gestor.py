@@ -22,7 +22,7 @@ class Gestor:
 		[tree.delete(elemento) for elemento in registros]
 		try:
 			alumnos = Servicio.consultar()
-			[tree.insert("", 0, text=row[0], values=(row[1], row[2], row[3])) for row in alumnos]
+			[tree.insert("", 0, text=row[0], values=(row[1], row[2])) for row in alumnos]
 		except:
 			messagebox.showwarning("ADVERTENCIA",Mensaje.ERROR_MOSTRAR)
 

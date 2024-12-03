@@ -72,7 +72,7 @@ def seleccionarUsandoClick(event):
 root = Tk()
 root.title("APLICACION CRUD CON BASE DE DATOS")
 root.configure(background='lightblue')
-root.geometry("600x350")
+root.geometry("950x600")
 
 # iconos
 # Cargar imágenes
@@ -88,17 +88,18 @@ miCargo = StringVar()
 miSalario = StringVar()
 
 ################################## Tabla ################################
-cabecera = ["ID", "Nombre del Alumno", "Fecha de nacimiento", "alumno"]
+cabecera = ["Apellido y Nombre", "Documento", "Estudiante"]
 
 tree = ttk.Treeview(height=10, columns=('#0', '#1', '#2'))
 tree.place(x=0, y=130)
-tree.column('#0', width=100)
+tree.column('#0', width=300)
 tree.heading('#0', text=cabecera[0], anchor=CENTER)
 tree.heading('#1', text=cabecera[1], anchor=CENTER)
 tree.heading('#2', text=cabecera[2], anchor=CENTER)
-tree.column('#3', width=100)
-tree.heading('#3', text=cabecera[3], anchor=CENTER)
-tree.bind("<Button-1>", seleccionarUsandoClick)
+#tree.column('#3', width=100)
+#tree.heading('#3', text=cabecera[3], anchor=CENTER)
+#tree.heading('#4', text=cabecera[4], anchor=CENTER)
+#tree.bind("<Button-1>", seleccionarUsandoClick)
 mostrar()
 
 ###################### Colocar widgets en la VISTA ######################

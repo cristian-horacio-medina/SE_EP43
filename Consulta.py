@@ -12,7 +12,7 @@ class Consulta:
 
 	INSERT="INSERT INTO empleado VALUES(NULL,?,?,?)"
 
-	SELECT="SELECT * FROM alumnos"
+	SELECT="SELECT CONCAT(Apellido, ', ', Nombre) AS NombreCompleto, DNI, Alumno FROM alumnos"
 
 	UPDATE="UPDATE empleado SET NOMBRE=?, CARGO=?, SALARIO=? WHERE ID="
 
