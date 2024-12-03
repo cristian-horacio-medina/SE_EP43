@@ -12,7 +12,7 @@ class Consulta:
 
 	INSERT="INSERT INTO empleado VALUES(NULL,?,?,?)"
 
-	SELECT="SELECT * FROM empleado"
+	SELECT="SELECT * FROM alumnos"
 
 	UPDATE="UPDATE empleado SET NOMBRE=?, CARGO=?, SALARIO=? WHERE ID="
 

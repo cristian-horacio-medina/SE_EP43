@@ -21,8 +21,8 @@ class Gestor:
 		registros=tree.get_children()
 		[tree.delete(elemento) for elemento in registros]
 		try:
-			empleados = Servicio.consultar()
-			[tree.insert("", 0, text=row[0], values=(row[1], row[2], row[3])) for row in empleados]
+			alumnos = Servicio.consultar()
+			[tree.insert("", 0, text=row[0], values=(row[1], row[2], row[3])) for row in alumnos]
 		except:
 			messagebox.showwarning("ADVERTENCIA",Mensaje.ERROR_MOSTRAR)
 
