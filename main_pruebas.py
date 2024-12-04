@@ -314,7 +314,7 @@ class FormularioCarga(tk.Frame):
 
         # Botón para actualizar el Label con el dato ingresado en Entry
         self.btn_actualizar = tk.Button(
-            tabulador, text="Guardar", command=self.guardar_json)
+            tabulador, text="Guardar", command=self.guardar_sqlite)
         self.btn_actualizar.grid(row=10, column=1, sticky='e', padx=5, pady=5)
 
     def mostrar_advertencia(self, texto):
@@ -652,21 +652,21 @@ class FormularioCarga(tk.Frame):
                                 (excursion_id, acomp.strip(), tipo_acomp))
 
                 # Insertar los grados (si es necesario)
-                for grado in grado_alumno.split(","):  # Suponiendo que los grados están separados por comas
+            for grado in grado_alumno.split(","):  # Suponiendo que los grados están separados por comas
                     cursor.execute('''INSERT INTO grado (excursion_id, grado) VALUES (?, ?)''', 
-                                (excursion_id, grado.strip()))
+                    (excursion_id, grado.strip()))
 
                     # Confirmar los cambios
                     conn.commit()
                     messagebox.showinfo("Éxito", "Datos guardados correctamente en la base de datos.")
 
-            except Exception as e:
-                conn.rollback()  # Revertir cambios en caso de error
-                messagebox.showerror("Error", f"No se pudo guardar en la base de datos: {e}")
+        except Exception as e:
+              conn.rollback()  # Revertir cambios en caso de error
+              messagebox.showerror("Error", f"No se pudo guardar en la base de datos: {e}")
             
-            finally:
-                # Cerrar la conexión
-                conn.close()
+        finally:
+               # Cerrar la conexión
+               conn.close()
 
 
 
