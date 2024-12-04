@@ -575,7 +575,7 @@ class FormularioCarga(tk.Frame):
         fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
-        acompañantes = self.datosacompañantes_entry.get()
+        acompanantes = self.datosacompañantes_entry.get()
         empresa_contratada = self.empresacontratada_entry.get()
         datos_infraestructura = self.datosinfraestructura_entry.get()
         hospitales = self.hospitales_entry.get()
@@ -590,7 +590,7 @@ class FormularioCarga(tk.Frame):
         try:
           # Crear las tablas si no existen
             cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    EXCURSION_id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     lugar TEXT,
                                     fecha TEXT,
                                     nombre_proyecto TEXT,
@@ -599,7 +599,7 @@ class FormularioCarga(tk.Frame):
                                     fecha_regreso TEXT,
                                     hora_regreso TEXT,
                                     lugar_estadia TEXT,
-                                    acompañantes TEXT,
+                                    acompanantes TEXT,
                                     empresa_contratada TEXT,
                                     datos_infraestructura TEXT,
                                     hospitales TEXT,
@@ -631,7 +631,7 @@ class FormularioCarga(tk.Frame):
                                 datos_infraestructura, hospitales, otros_datos)
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                                 (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
-                                hora_regreso, lugar_estadia, acompañantes, empresa_contratada,
+                                hora_regreso, lugar_estadia, acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos))
 
                 # Obtener el ID de la excursión recién insertada
@@ -640,7 +640,7 @@ class FormularioCarga(tk.Frame):
                 # Insertar los registros de alumnos, acompañantes y grado
             for registro in registros:
                     nombre_alumno, grado_alumno = registro[0], registro[1]
-                    cursor.execute('''INSERT INTO alumnos (excursion_id, nombre, grado) VALUES (?, ?, ?)''',
+                    cursor.execute('''INSERT INTO alumnos (excursion_id, nombre,idgrado) VALUES (?, ?, ?)''',
                                 (excursion_id, nombre_alumno, grado_alumno))
 
                     # Insertar acompañantes (puedes adaptarlo según cómo estén definidos)
@@ -648,7 +648,7 @@ class FormularioCarga(tk.Frame):
                     acompanante = acompanantes.split(",")
             for acomp in acompanante:
                     tipo_acomp = "Docente"  # Cambia esto según el caso
-                    cursor.execute('''INSERT INTO acompañantes (excursion_id, nombre, tipo) VALUES (?, ?, ?)''',
+                    cursor.execute('''INSERT INTO acompanantes (excursion_id, nombre, docente) VALUES (?, ?, ?)''',
                                 (excursion_id, acomp.strip(), tipo_acomp))
 
                 # Insertar los grados (si es necesario)

@@ -6,7 +6,7 @@ from Empleado import *
 class Servicio:
 
 	def conectar():
-		miConexion = sqlite3.connect(r"C:\Users\Papá\Python\Excursion.db")
+		miConexion = sqlite3.connect(r"C:\Users\Cristian\Python\Excursion.db")
 		miCursor = miConexion.cursor()
 		return miConexion, miCursor
 
