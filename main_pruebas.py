@@ -59,6 +59,12 @@ class FormularioCarga(tk.Frame):
         self.lugar_entry = tk.Entry(tabulador, width=60)
         self.lugar_entry.grid(row=0, column=1, columnspan=2,
                               sticky='w', padx=5, pady=5)
+        
+        self.combobox_grado = ttk.Combobox(
+            tabulador, values=["1º A M", "1º A M"])
+        self.combobox_grado.grid(row=0, column=2, sticky="e", padx=5, pady=5)
+        self.combobox_grado.config(state="enabled")
+        
 
         # Botón "Nueva excursión"
         tk.Button(tabulador, text="Nueva excursión").grid(
