@@ -1,5 +1,6 @@
 from tkinter import messagebox
 from Servicio import *
+from Mensaje import *
 
 class Gestor:
 
