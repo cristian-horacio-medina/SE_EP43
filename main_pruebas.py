@@ -3,6 +3,7 @@ import json
 import os
 import locale
 import sys
+import sqlite3
 from datetime import datetime
 from tkinter import messagebox, ttk
 from tkinter import filedialog
@@ -21,22 +22,19 @@ class FormularioCarga(tk.Frame):
         super().__init__(master)  # Llama al constructor de tk.Frame
         self.master = master
         self.accion_actual = "mostrar"
-        #self.rol_seleccionado = tk.StringVar()
+        # self.rol_seleccionado = tk.StringVar()
         master.title("Formulario de Carga")
-        
+
         # Inicializa los componentes
         self.crear_tabs()  # Aquí lo llamas desde la instancia, usando `self`
         # Inicializa el contador de registros
         self.contador = 1
-        
 
         # Configuración de la cuadrícula principal
         master.columnconfigure(0, weight=1)
         master.columnconfigure(1, weight=1)
         master.columnconfigure(2, weight=1)
         master.columnconfigure(3, weight=1)
-        
-        
 
     def crear_tabs(self):
         # Creamos un tab control, para ello usamos la clase Notebook
@@ -56,92 +54,110 @@ class FormularioCarga(tk.Frame):
 
     def crear_componentes_tabulador1(self, tabulador):
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
-        tk.Label(tabulador, text="Lugar:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Lugar:").grid(
+            row=0, column=0, sticky='w', padx=5, pady=5)
         self.lugar_entry = tk.Entry(tabulador, width=60)
-        self.lugar_entry.grid(row=0, column=1, columnspan=2,  sticky='w', padx=5, pady=5) 
-       
+        self.lugar_entry.grid(row=0, column=1, columnspan=2,
+                              sticky='w', padx=5, pady=5)
+
         # Botón "Nueva excursión"
-        tk.Button(tabulador, text="Nueva excursión").grid(row=0, column=3, sticky='w', padx=5, pady=5)
+        tk.Button(tabulador, text="Nueva excursión").grid(
+            row=0, column=3, sticky='w', padx=5, pady=5)
 
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de salida:").grid(row=1, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Fecha de salida:").grid(
+            row=1, column=0, sticky='w', padx=5, pady=5)
         self.fecha_entry = tk.Entry(tabulador, width=15)
         self.fecha_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
 
-        
         # Añadido: Evento para formatear la fecha
         self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
 
         # Agregar una etiqueta y un campo de entrada para 'Apellido'
-        tk.Label(tabulador, text="Apellido:").grid(row=2, column=0, sticky='w', padx=5, pady=2)
+        tk.Label(tabulador, text="Apellido:").grid(
+            row=2, column=0, sticky='w', padx=5, pady=2)
         self.apellido_entry = tk.Entry(tabulador, width=40)
         self.apellido_entry.grid(row=2, column=1, sticky='w', padx=5, pady=2)
 
         # Agregar una etiqueta y un campo de entrada para 'Nombre'
-        tk.Label(tabulador, text="Nombre:").grid(row=2, column=1, sticky='e', padx=5, pady=2)
+        tk.Label(tabulador, text="Nombre:").grid(
+            row=2, column=1, sticky='e', padx=5, pady=2)
         self.nombre_entry = tk.Entry(tabulador, width=40)
         self.nombre_entry.grid(row=2, column=2, sticky='w', padx=5, pady=2)
 
         # Agregar una etiqueta y un campo de entrada para 'Documento'
-        tk.Label(tabulador, text="Documento:").grid(row=3, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Documento:").grid(
+            row=3, column=0, sticky='w', padx=5, pady=5)
         self.documento_entry = tk.Entry(tabulador, width=20)
         self.documento_entry.grid(row=3, column=1, sticky='w', padx=5, pady=5)
 
         # Variable para el rol seleccionado
         self.rol_seleccionado = tk.StringVar(value="Estudiante")
-    
-            
-        # Radiobuttons para seleccionar rol
-        tk.Radiobutton(tabulador, text="Estudiante", variable=self.rol_seleccionado, value="Estudiante").grid(row=4, column=0)
-                       
-        #tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado, value="Docente").grid(row=4, column=1)
-        #tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado, value="No Docente").grid(row=4, column=2)
 
-        tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado, value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
-        tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado, value="No Docente", command=self.mostrar_combobox).grid(row=4, column=2)
-        
+        # Radiobuttons para seleccionar rol
+        tk.Radiobutton(tabulador, text="Estudiante", variable=self.rol_seleccionado,
+                       value="Estudiante").grid(row=4, column=0)
+
+        # tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado, value="Docente").grid(row=4, column=1)
+        # tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado, value="No Docente").grid(row=4, column=2)
+
+        tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado,
+                       value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
+        tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado,
+                       value="No Docente", command=self.mostrar_combobox).grid(row=4, column=2)
+
         # Crear el Combobox para "Responsable" o "Reemplazante"
-        self.combobox_docente = ttk.Combobox(tabulador, values=["responsable", "reemplazante"])
+        self.combobox_docente = ttk.Combobox(
+            tabulador, values=["responsable", "reemplazante"])
         self.combobox_docente.grid(row=5, column=1, sticky="w", padx=5, pady=5)
         self.combobox_docente.config(state="disabled")
-               
-        self.combobox_no_docente = ttk.Combobox(tabulador, values=["responsable", "reemplazante"])
-        self.combobox_no_docente.grid(row=5, column=2, sticky="w", padx=5, pady=5)
+
+        self.combobox_no_docente = ttk.Combobox(
+            tabulador, values=["responsable", "reemplazante"])
+        self.combobox_no_docente.grid(
+            row=5, column=2, sticky="w", padx=5, pady=5)
         self.combobox_no_docente.config(state="disabled")
-    
-            
+
         # Botón para nueva excursión
-        self.agregar_btn = tk.Button(tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
-        self.agregar_btn.grid(row=0, column=3, columnspan=2, sticky='w', padx=5, pady=5)
+        self.agregar_btn = tk.Button(
+            tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
+        self.agregar_btn.grid(row=0, column=3, columnspan=2,
+                              sticky='w', padx=5, pady=5)
 
         # Botón para agregar registro
-        self.agregar_btn = tk.Button(tabulador, text="Agregar", command=self.agregar)
+        self.agregar_btn = tk.Button(
+            tabulador, text="Agregar", command=self.agregar)
         self.agregar_btn.grid(row=6, column=0, sticky='ew')
 
-        
-        self.boton_ordenar = tk.Button(tabulador, text="Ordenar", command=self.ordenar_treeview)
+        self.boton_ordenar = tk.Button(
+            tabulador, text="Ordenar", command=self.ordenar_treeview)
         self.boton_ordenar.grid(row=6, column=1, sticky='ew')
-        
+
         # Botón para mostrar o actualizar
-        self.mostrar_button = tk.Button(tabulador, text="Modificar", command=self.mostrar_o_actualizar)
-        self.mostrar_button.grid(row=6, column=2, sticky='ew') 
+        self.mostrar_button = tk.Button(
+            tabulador, text="Modificar", command=self.mostrar_o_actualizar)
+        self.mostrar_button.grid(row=6, column=2, sticky='ew')
 
         # Botones para borrar, guardar, cargar, generar PDF y salir
-        self.borrar_btn = tk.Button(tabulador, text="Borrar Seleccionado", command=self.borrar)
+        self.borrar_btn = tk.Button(
+            tabulador, text="Borrar Seleccionado", command=self.borrar)
         self.borrar_btn.grid(row=9, column=0, sticky='ew')
 
-        self.guardar_btn = tk.Button(tabulador, text="Guardar excursión", command=self.guardar_json)
+        self.guardar_btn = tk.Button(
+            tabulador, text="Guardar excursión", command=self.guardar_sqlite)
         self.guardar_btn.grid(row=9, column=1, sticky='ew')
 
-        self.cargar_btn = tk.Button(tabulador, text="Cargar excursión", command=self.cargar_json)
+        self.cargar_btn = tk.Button(
+            tabulador, text="Cargar excursión", command=self.cargar_json)
         self.cargar_btn.grid(row=9, column=2, sticky='ew')
 
-        self.generar_pdf_btn = tk.Button(tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
+        self.generar_pdf_btn = tk.Button(
+            tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
         self.generar_pdf_btn.grid(row=9, column=3, sticky='ew')
 
         self.salir_btn = tk.Button(tabulador, text="Salir", command=quit)
         self.salir_btn.grid(row=10, column=1, columnspan=2, sticky='ew')
-                        
+
         # Botón para generar los PDFs individuales
         self.generar_pdfs_btn = tk.Button(
             tabulador, text="Generar Anexo VI", command=self.generar_pdf_Anexo_VI)
@@ -152,9 +168,10 @@ class FormularioCarga(tk.Frame):
         tabulador.grid_columnconfigure(1, weight=1)  # Segunda columna
         tabulador.grid_columnconfigure(2, weight=1)  # Tercera columna
         tabulador.grid_columnconfigure(3, weight=1)  # Cuarta columna
-        
+
         # Listado (Treeview)
-        self.tree = ttk.Treeview(tabulador, columns=("Nº", "Apellido y Nombre", "Documento", "Estudiante", "Docente", "No Docente"), show='headings')
+        self.tree = ttk.Treeview(tabulador, columns=(
+            "Nº", "Apellido y Nombre", "Documento", "Estudiante", "Docente", "No Docente"), show='headings')
         self.tree.heading("Nº", text="Nº")
         self.tree.heading("Apellido y Nombre", text="Apellido y Nombre")
         self.tree.heading("Documento", text="Documento")
@@ -170,15 +187,14 @@ class FormularioCarga(tk.Frame):
         self.tree.column("Docente", width=50)
         self.tree.column("No Docente", width=50)
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
-        
-        
-        
+
         # Colocar el Treeview en una Scrollbar para cuando se expanden los datos
-        tree_scroll = tk.Scrollbar(tabulador, orient="vertical", command=self.tree.yview)
+        tree_scroll = tk.Scrollbar(
+            tabulador, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=tree_scroll.set)
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
         tree_scroll.grid(row=8, column=4, sticky='ns')
-    
+
     def mostrar_combobox(self):
         # Ocultar ambos Combobox
         self.combobox_docente.grid_remove()
@@ -191,94 +207,127 @@ class FormularioCarga(tk.Frame):
         elif self.rol_seleccionado.get() == "No Docente":
             self.combobox_no_docente.grid()
             self.combobox_no_docente.config(state="normal")
+
     def crear_componentes_tabulador2(self, tabulador):
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
-        tk.Label(tabulador, text="Nombre del Proyecto:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Nombre del Proyecto:").grid(
+            row=0, column=0, sticky='w', padx=5, pady=5)
         self.proyecto_entry = tk.Entry(tabulador, width=50)
-        self.proyecto_entry.grid(row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
-        self.proyecto_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.proyecto_entry, 50, tabulador)) 
-        
+        self.proyecto_entry.grid(
+            row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.proyecto_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.proyecto_entry, 50, tabulador))
+
         # Agregar una etiqueta a Lugar de salida
-        tk.Label(tabulador, text="Lugar de salida: E.P. Nº 43").grid(row=1, column=0, sticky='w', padx=5, pady=2)
-        
+        tk.Label(tabulador, text="Lugar de salida: E.P. Nº 43").grid(
+            row=1, column=0, sticky='w', padx=5, pady=2)
+
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de salida:").grid(row=1, column=1, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Fecha de salida:").grid(
+            row=1, column=1, sticky='w', padx=5, pady=5)
         self.fechasalida_entry = tk.Entry(tabulador, width=8)
-        self.fechasalida_entry.grid(row=1, column=1, sticky='w', padx=125, pady=5)
-        self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.fechasalida_entry, 10, tabulador))
+        self.fechasalida_entry.grid(
+            row=1, column=1, sticky='w', padx=125, pady=5)
+        self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.fechasalida_entry, 10, tabulador))
 
-        tk.Label(tabulador, text="Hora de salida:").grid(row=1, column=2, sticky='w', padx=5, pady=2)
+        tk.Label(tabulador, text="Hora de salida:").grid(
+            row=1, column=2, sticky='w', padx=5, pady=2)
         self.horasalida_entry = tk.Entry(tabulador, width=5)
-        self.horasalida_entry.grid(row=1, column=2, sticky='W', padx=105, pady=2)    
-        self.horasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.horasalida_entry, 5, tabulador))
+        self.horasalida_entry.grid(
+            row=1, column=2, sticky='W', padx=105, pady=2)
+        self.horasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.horasalida_entry, 5, tabulador))
 
         # Agregar una etiqueta a Lugar de salida
-        tk.Label(tabulador, text="Lugar de regreso: E.P. Nº 43").grid(row=2, column=0, sticky='w', padx=5, pady=2)
-        
+        tk.Label(tabulador, text="Lugar de regreso: E.P. Nº 43").grid(
+            row=2, column=0, sticky='w', padx=5, pady=2)
+
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de regreso:").grid(row=2, column=1, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Fecha de regreso:").grid(
+            row=2, column=1, sticky='w', padx=5, pady=5)
         self.fecharegreso_entry = tk.Entry(tabulador, width=8)
-        self.fecharegreso_entry.grid(row=2, column=1, sticky='w', padx=125, pady=5)
-        self.fecharegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.fecharegreso_entry, 10, tabulador))    
-    
-        tk.Label(tabulador, text="Hora de regreso:").grid(row=2, column=2, sticky='w', padx=5, pady=2)
+        self.fecharegreso_entry.grid(
+            row=2, column=1, sticky='w', padx=125, pady=5)
+        self.fecharegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.fecharegreso_entry, 10, tabulador))
+
+        tk.Label(tabulador, text="Hora de regreso:").grid(
+            row=2, column=2, sticky='w', padx=5, pady=2)
         self.horaregreso_entry = tk.Entry(tabulador, width=5)
-        self.horaregreso_entry.grid(row=2, column=2, sticky='W', padx=105, pady=2)    
-        self.horaregreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.horaregreso_entry, 5, tabulador))
+        self.horaregreso_entry.grid(
+            row=2, column=2, sticky='W', padx=105, pady=2)
+        self.horaregreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.horaregreso_entry, 5, tabulador))
         # Lugares de estadía
-        tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(row=3, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
+            row=3, column=0, sticky='w', padx=5, pady=5)
         self.lugarestadia_entry = tk.Entry(tabulador, width=44)
-        self.lugarestadia_entry.grid(row=3, column=1, columnspan=2, sticky='w', padx=5, pady=5)
-        self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.lugarestadia_entry, 44, tabulador)) 
+        self.lugarestadia_entry.grid(
+            row=3, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.lugarestadia_entry, 44, tabulador))
 
         # Nombre y tel. de los acompañantes
-        tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(row=4, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(
+            row=4, column=0, sticky='w', padx=5, pady=5)
         self.datosacompañantes_entry = tk.Entry(tabulador, width=43)
-        self.datosacompañantes_entry.grid(row=4, column=1, columnspan=2, sticky='w', padx=5, pady=5) 
-        self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.datosacompañantes_entry, 43, tabulador))
+        self.datosacompañantes_entry.grid(
+            row=4, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.datosacompañantes_entry, 43, tabulador))
         # Empresa y/o empresas contratadas
-        tk.Label(tabulador, text="Empresa/s contratada/s\n(nombre, dirección, tel.:").grid(row=5, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Empresa/s contratada/s\n(nombre, dirección, tel.:").grid(
+            row=5, column=0, sticky='w', padx=5, pady=5)
         self.empresacontratada_entry = tk.Entry(tabulador, width=102)
-        self.empresacontratada_entry.grid(row=5, column=1, columnspan=2, sticky='w', padx=5, pady=5) 
-        self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.empresacontratada_entry, 102, tabulador))
-             
+        self.empresacontratada_entry.grid(
+            row=5, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.empresacontratada_entry, 102, tabulador))
+
         # Otros datos de la infraestructura disponible
-        tk.Label(tabulador, text="Otros datos de la\ninfraestructura disponible:").grid(row=6, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Otros datos de la\ninfraestructura disponible:").grid(
+            row=6, column=0, sticky='w', padx=5, pady=5)
         self.datosinfraestructura_entry = tk.Entry(tabulador, width=124)
-        self.datosinfraestructura_entry.grid(row=6, column=1, columnspan=2, sticky='w', padx=5, pady=5) 
-        self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.datosinfraestructura_entry, 124, tabulador))
-        
+        self.datosinfraestructura_entry.grid(
+            row=6, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.datosinfraestructura_entry, 124, tabulador))
+
         # Hospitales y centros asistenciales cercanos\n(direcciones y teléfonos)
-        tk.Label(tabulador, text="Hospitales y centros asist.\ncercanos(direcciones y tel.:").grid(row=7, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Hospitales y centros asist.\ncercanos(direcciones y tel.:").grid(
+            row=7, column=0, sticky='w', padx=5, pady=5)
         self.hospitales_entry = tk.Entry(tabulador, width=98)
-        self.hospitales_entry.grid(row=7, column=1, columnspan=2, sticky='w', padx=5, pady=5) 
-        self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.hospitales_entry, 98, tabulador))
+        self.hospitales_entry.grid(
+            row=7, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.hospitales_entry, 98, tabulador))
 
         # Otros datos de la interés
-        tk.Label(tabulador, text="Otros datos de interés:").grid(row=8, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Otros datos de interés:").grid(
+            row=8, column=0, sticky='w', padx=5, pady=5)
         self.otrosdatos_entry = tk.Entry(tabulador, width=124)
-        self.otrosdatos_entry.grid(row=8, column=1, columnspan=2, sticky='w', padx=5, pady=5) 
-        self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.otrosdatos_entry, 137, tabulador))
-        
+        self.otrosdatos_entry.grid(
+            row=8, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+        self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.otrosdatos_entry, 137, tabulador))
+
         # Botón para actualizar el Label con el dato ingresado en Entry
-        self.btn_actualizar = tk.Button(tabulador, text="Guardar", command=self.guardar_json)
+        self.btn_actualizar = tk.Button(
+            tabulador, text="Guardar", command=self.guardar_json)
         self.btn_actualizar.grid(row=10, column=1, sticky='e', padx=5, pady=5)
-             
-    
-         
+
     def mostrar_advertencia(self, texto):
-        
+
         messagebox.showwarning("Advertencia", texto)
-        
-        
+
     def limitar_caracteres(self, entry, limite, tabulador):
         texto = entry.get()
         if len(texto) > limite:
             entry.delete(limite, tk.END)
-            self.mostrar_advertencia(f"El límite de {limite} caracteres ha sido superado.")
-    
-    
-              
+            self.mostrar_advertencia(
+                f"El límite de {limite} caracteres ha sido superado.")
+
     def formatear_fecha(self, event):  # Nuevo método para formatear la fecha
         fecha = self.fecha_entry.get().replace("/", "")
         if len(fecha) >= 2:
@@ -287,7 +336,7 @@ class FormularioCarga(tk.Frame):
             fecha = fecha[:5] + "/" + fecha[5:]
         self.fecha_entry.delete(0, tk.END)
         self.fecha_entry.insert(0, fecha)
-        
+
     def agregar(self):
         apellido = self.apellido_entry.get()
         nombre = self.nombre_entry.get()
@@ -297,12 +346,14 @@ class FormularioCarga(tk.Frame):
         # Determina el Combobox adecuado basado en el rol
         if rol == "Docente":
             if not self.combobox_docente.get():  # Si no se seleccionó un valor en el combobox
-                messagebox.showwarning("Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para Docente.")
+                messagebox.showwarning(
+                    "Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para Docente.")
                 return
             rol_seleccionado = self.combobox_docente.get()  # Obtener el valor seleccionado
         elif rol == "No Docente":
             if not self.combobox_no_docente.get():  # Si no se seleccionó un valor en el combobox
-                messagebox.showwarning("Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para No Docente.")
+                messagebox.showwarning(
+                    "Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para No Docente.")
                 return
             rol_seleccionado = self.combobox_no_docente.get()  # Obtener el valor seleccionado
         else:
@@ -316,12 +367,13 @@ class FormularioCarga(tk.Frame):
             no_docente = rol_seleccionado if rol == "No Docente" else ""
 
             # Inserta los datos en el Treeview
-            self.tree.insert("", "end", values=(self.contador, apellido_nombre, documento, estudiante, docente, no_docente))
+            self.tree.insert("", "end", values=(
+                self.contador, apellido_nombre, documento, estudiante, docente, no_docente))
             self.contador += 1
             self.limpiar()
         else:
-            messagebox.showwarning("Advertencia", "Por favor, complete todos los campos.")
-
+            messagebox.showwarning(
+                "Advertencia", "Por favor, complete todos los campos.")
 
     def limpiar(self):
         # Limpiar los campos de entrada
@@ -332,16 +384,20 @@ class FormularioCarga(tk.Frame):
         self.combobox_rol.set("")
         self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
 
-    
-            
     def ordenar_treeview(self):
         # Obtener todos los registros del Treeview
-        registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
+        registros = [self.tree.item(child)["values"]
+                                    for child in self.tree.get_children()]
 
         # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-        estudiantes = sorted([r for r in registros if r[3] == "x"], key=lambda x: x[1])
-        docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
-        no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
+        estudiantes = sorted(
+            [r for r in registros if r[3] == "x"], key=lambda x: x[1])
+        # Docentes tienen algo en la columna 4
+        docentes = sorted([r for r in registros if r[4]
+                          != ""], key=lambda x: x[1])
+        # No Docentes tienen algo en la columna 5
+        no_docentes = sorted(
+            [r for r in registros if r[5] != ""], key=lambda x: x[1])
 
         # Concatenar los tres grupos en el orden solicitado
         registros_ordenados = estudiantes + docentes + no_docentes
@@ -408,7 +464,8 @@ class FormularioCarga(tk.Frame):
                     self.rol_seleccionado.set("Estudiante")
 
                 # Cambiar el texto del botón a "Actualizar"
-                self.mostrar_button.config(text="Actualizar",bg="green", fg="white", font=("Arial", 10, "bold"))
+                self.mostrar_button.config(
+                    text="Actualizar", bg="green", fg="white", font=("Arial", 10, "bold"))
                 self.accion_actual = "actualizar"  # Cambiar estado a actualizar
             else:
                 # Obtener los nuevos valores de los Entry
@@ -439,68 +496,180 @@ class FormularioCarga(tk.Frame):
                 self.limpiar()
 
                 # Cambiar texto del botón de vuelta a "Modificar"
-                self.mostrar_button.config(text="Modificar", bg="white", fg="black", font=("Arial", 10, "bold"))
+                self.mostrar_button.config(
+                    text="Modificar", bg="white", fg="black", font=("Arial", 10, "bold"))
                 self.accion_actual = "mostrar"
 
                 # Reordenar y guardar cambios
                 self.ordenar_treeview()
                 self.guardar_json()
         else:
-            messagebox.showwarning("Advertencia", "No se ha seleccionado ningún elemento.")
+            messagebox.showwarning(
+                "Advertencia", "No se ha seleccionado ningún elemento.")
 
+    # def guardar_json(self):
+    #     # Obtén los registros desde el Treeview
+    #     registros = [self.tree.item(child)["values"]
+    #                  for child in self.tree.get_children()]
 
-    def guardar_json(self):
+    #     # Obtener valores de "Lugar" y "Fecha" desde los TextBox
+    #     lugar = self.lugar_entry.get().replace(" ", "_")
+    #     fecha = self.fecha_entry.get().replace("/", "-")  # Reemplazar barras por guiones
+    #     nombre_archivo = f"{lugar}_{fecha}.json"
+
+    #     # Estructura de datos para el JSON
+    #     data = {
+    #         "lugar": self.lugar_entry.get(),
+    #         "fecha": self.fecha_entry.get(),
+    #         "registros": registros,
+    #         "Nombre del proyecto": self.proyecto_entry.get(),
+    #         "Fecha de salida": self.fechasalida_entry.get(),
+    #         "Hora de salida": self.horasalida_entry.get(),
+    #         "Fecha de regreso": self.fecharegreso_entry.get(),
+    #         "Hora de regreso": self.horaregreso_entry.get(),
+    #         "Lugar de estadia": self.lugarestadia_entry.get(),
+    #         "Nombres y teléfonos de los acompañantes": self.datosacompañantes_entry.get(),
+    #         "Empresa contratada": self.empresacontratada_entry.get(),
+    #         "Datos de infraestructura": self.datosinfraestructura_entry.get(),
+    #         "Hospitales y centros de salud": self.hospitales_entry.get(),
+    #         "Otros datos": self.otrosdatos_entry.get()
+
+    #     }
+
+    #     # Obtener la ruta de la carpeta Documentos del usuario
+    #     carpeta_documentos = os.path.join(os.path.expanduser("~"), "Documents", "backup_salidas_escolares")
+
+    #     # Crear la carpeta en Documentos si no existe
+    #     if not os.path.exists(carpeta_documentos):
+    #         os.makedirs(carpeta_documentos)
+
+    #     # Ruta completa para guardar el archivo JSON en Documentos/backup_salidas_escolares
+    #     file_path = os.path.join(carpeta_documentos, nombre_archivo)
+
+    #     # Guardar archivo JSON
+    #     try:
+    #         with open(file_path, "w") as f:
+    #             # Guardar la estructura completa de datos
+    #             json.dump(data, f, indent=4)
+    #         messagebox.showinfo("Éxito", f"Registros guardados en {file_path}.")
+
+    #         # Reinicia el formulario después de guardar
+    #         # self.reiniciar_formulario()
+    #         # self.lugar_entry.focus()  # Ubica el cursor en el campo Lugar
+
+    #     except Exception as e:
+    #         messagebox.showerror("Error", f"No se pudo guardar el archivo: {e}")
+
+    def guardar_sqlite(self):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
-                     for child in self.tree.get_children()]
+                                    for child in self.tree.get_children()]
 
-        # Obtener valores de "Lugar" y "Fecha" desde los TextBox
+        # Obtener valores de los campos de entrada (TextBox)
         lugar = self.lugar_entry.get().replace(" ", "_")
-        fecha = self.fecha_entry.get().replace("/", "-")  # Reemplazar barras por guiones
-        nombre_archivo = f"{lugar}_{fecha}.json"
+        fecha = self.fecha_entry.get().replace(
+            "/", "-")  # Reemplazar barras por guiones
+        nombre_proyecto = self.proyecto_entry.get()
+        fecha_salida = self.fechasalida_entry.get()
+        hora_salida = self.horasalida_entry.get()
+        fecha_regreso = self.fecharegreso_entry.get()
+        hora_regreso = self.horaregreso_entry.get()
+        lugar_estadia = self.lugarestadia_entry.get()
+        acompañantes = self.datosacompañantes_entry.get()
+        empresa_contratada = self.empresacontratada_entry.get()
+        datos_infraestructura = self.datosinfraestructura_entry.get()
+        hospitales = self.hospitales_entry.get()
+        otros_datos = self.otrosdatos_entry.get()
 
-        # Estructura de datos para el JSON
-        data = {
-            "lugar": self.lugar_entry.get(),
-            "fecha": self.fecha_entry.get(),
-            "registros": registros,
-            "Nombre del proyecto": self.proyecto_entry.get(),
-            "Fecha de salida": self.fechasalida_entry.get(), 
-            "Hora de salida": self.horasalida_entry.get(),
-            "Fecha de regreso": self.fecharegreso_entry.get(),
-            "Hora de regreso": self.horaregreso_entry.get(),
-            "Lugar de estadia": self.lugarestadia_entry.get(),
-            "Nombres y teléfonos de los acompañantes": self.datosacompañantes_entry.get(),
-            "Empresa contratada": self.empresacontratada_entry.get(),
-            "Datos de infraestructura": self.datosinfraestructura_entry.get(),
-            "Hospitales y centros de salud": self.hospitales_entry.get(),
-            "Otros datos": self.otrosdatos_entry.get()
-            
-        }
+        # Conectar a la base de datos SQLite
+        db_path = os.path.join(os.path.expanduser(
+            "~"), "Documents", "Excursion.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
 
-        # Obtener la ruta de la carpeta Documentos del usuario
-        carpeta_documentos = os.path.join(os.path.expanduser("~"), "Documents", "backup_salidas_escolares")
-
-        # Crear la carpeta en Documentos si no existe
-        if not os.path.exists(carpeta_documentos):
-            os.makedirs(carpeta_documentos)
-
-        # Ruta completa para guardar el archivo JSON en Documentos/backup_salidas_escolares
-        file_path = os.path.join(carpeta_documentos, nombre_archivo)
-
-        # Guardar archivo JSON
         try:
-            with open(file_path, "w") as f:
-                # Guardar la estructura completa de datos
-                json.dump(data, f, indent=4)
-            messagebox.showinfo("Éxito", f"Registros guardados en {file_path}.")
+          # Crear las tablas si no existen
+            cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    lugar TEXT,
+                                    fecha TEXT,
+                                    nombre_proyecto TEXT,
+                                    fecha_salida TEXT,
+                                    hora_salida TEXT,
+                                    fecha_regreso TEXT,
+                                    hora_regreso TEXT,
+                                    lugar_estadia TEXT,
+                                    acompañantes TEXT,
+                                    empresa_contratada TEXT,
+                                    datos_infraestructura TEXT,
+                                    hospitales TEXT,
+                                    otros_datos TEXT)''')
 
-            # Reinicia el formulario después de guardar
-            # self.reiniciar_formulario()
-            # self.lugar_entry.focus()  # Ubica el cursor en el campo Lugar
+            cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    excursion_id INTEGER,
+                                    nombre TEXT,
+                                    grado TEXT,
+                                    FOREIGN KEY(excursion_id) REFERENCES excursion(id))''')
 
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo guardar el archivo: {e}")
+            cursor.execute('''CREATE TABLE IF NOT EXISTS acompañantes (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    excursion_id INTEGER,
+                                    nombre TEXT,
+                                    tipo TEXT,  -- Puede ser 'Docente' o 'No Docente'
+                                    FOREIGN KEY(excursion_id) REFERENCES excursion(id))''')
+
+            cursor.execute('''CREATE TABLE IF NOT EXISTS grado (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    excursion_id INTEGER,
+                                    grado TEXT,
+                                    FOREIGN KEY(excursion_id) REFERENCES excursion(id))''')
+
+                # Insertar los datos en la tabla excursion
+            cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
+                                fecha_regreso, hora_regreso, lugar_estadia, acompañantes, empresa_contratada,
+                                datos_infraestructura, hospitales, otros_datos)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                                hora_regreso, lugar_estadia, acompañantes, empresa_contratada,
+                                datos_infraestructura, hospitales, otros_datos))
+
+                # Obtener el ID de la excursión recién insertada
+            excursion_id = cursor.lastrowid
+
+                # Insertar los registros de alumnos, acompañantes y grado
+            for registro in registros:
+                    nombre_alumno, grado_alumno = registro[0], registro[1]
+                    cursor.execute('''INSERT INTO alumnos (excursion_id, nombre, grado) VALUES (?, ?, ?)''',
+                                (excursion_id, nombre_alumno, grado_alumno))
+
+                    # Insertar acompañantes (puedes adaptarlo según cómo estén definidos)
+                    # Ejemplo, si los acompañantes están separados por comas
+                    acompanante = acompanantes.split(",")
+            for acomp in acompanante:
+                    tipo_acomp = "Docente"  # Cambia esto según el caso
+                    cursor.execute('''INSERT INTO acompañantes (excursion_id, nombre, tipo) VALUES (?, ?, ?)''',
+                                (excursion_id, acomp.strip(), tipo_acomp))
+
+                # Insertar los grados (si es necesario)
+                for grado in grado_alumno.split(","):  # Suponiendo que los grados están separados por comas
+                    cursor.execute('''INSERT INTO grado (excursion_id, grado) VALUES (?, ?)''', 
+                                (excursion_id, grado.strip()))
+
+                    # Confirmar los cambios
+                    conn.commit()
+                    messagebox.showinfo("Éxito", "Datos guardados correctamente en la base de datos.")
+
+            except Exception as e:
+                conn.rollback()  # Revertir cambios en caso de error
+                messagebox.showerror("Error", f"No se pudo guardar en la base de datos: {e}")
+            
+            finally:
+                # Cerrar la conexión
+                conn.close()
+
+
+
 
     def reiniciar_formulario(self):
         # Limpiar las entradas
