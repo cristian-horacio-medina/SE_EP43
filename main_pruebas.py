@@ -57,15 +57,16 @@ class FormularioCarga(tk.Frame):
         tk.Label(tabulador, text="Lugar:").grid(
             row=0, column=0, sticky='w', padx=5, pady=5)
         self.lugar_entry = tk.Entry(tabulador, width=60)
-        self.lugar_entry.grid(row=0, column=1, columnspan=2,
-                              sticky='w', padx=5, pady=5)
+        self.lugar_entry.grid(row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         
-        self.combobox_grado = ttk.Combobox(
-            tabulador, values=["1º A M", "1º A M"])
-        self.combobox_grado.grid(row=0, column=2, sticky="e", padx=5, pady=5)
-        self.combobox_grado.config(state="enabled")
+        self.combobox_grado = ttk.Combobox(tabulador, state="readonly")
+        self.combobox_grado.grid(row=0, column=2, padx=5, pady=5)
         
 
+         # Cargar datos en el Combobox
+        self.cargar_grados()
+        
+        
         # Botón "Nueva excursión"
         tk.Button(tabulador, text="Nueva excursión").grid(
             row=0, column=3, sticky='w', padx=5, pady=5)
@@ -201,6 +202,19 @@ class FormularioCarga(tk.Frame):
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
         tree_scroll.grid(row=8, column=4, sticky='ns')
 
+    def cargar_grados(self):
+        try:
+            conexion = sqlite3.connect("C://Users//Papá//Documents//excursion.db")
+            cursor = conexion.cursor()
+            cursor.execute("SELECT idgrado, grado || ' ' || seccion || ' ' || turno AS grado_completo FROM grado;")
+            resultados = cursor.fetchall()
+
+            self.grados = {fila[1]: fila[0] for fila in resultados}  # Diccionario de grados
+            self.combobox_grado["values"] = list(self.grados.keys())
+            conexion.close()
+        except Exception as e:
+            print(f"Error al cargar los grados: {e}")
+    
     def mostrar_combobox(self):
         # Ocultar ambos Combobox
         self.combobox_docente.grid_remove()
@@ -587,6 +601,12 @@ class FormularioCarga(tk.Frame):
         hospitales = self.hospitales_entry.get()
         otros_datos = self.otrosdatos_entry.get()
 
+        # Obtener el grado seleccionado desde el Combobox
+        grado_seleccionado = self.combobox_grado.get()
+
+        # Obtener el ID del grado desde el diccionario self.grados
+        idgrado = self.grados.get(grado_seleccionado)
+        
         # Conectar a la base de datos SQLite
         db_path = os.path.join(os.path.expanduser(
             "~"), "Documents", "Excursion.db")
@@ -634,11 +654,11 @@ class FormularioCarga(tk.Frame):
                 # Insertar los datos en la tabla excursion
             cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
                                 fecha_regreso, hora_regreso, lugar_estadia, acompañantes, empresa_contratada,
-                                datos_infraestructura, hospitales, otros_datos)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                datos_infraestructura, hospitales, otros_datos, idgrado)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                                 (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, acompanantes, empresa_contratada,
-                                datos_infraestructura, hospitales, otros_datos))
+                                datos_infraestructura, hospitales, otros_datos, idgrado))
 
                 # Obtener el ID de la excursión recién insertada
             excursion_id = cursor.lastrowid
@@ -658,9 +678,9 @@ class FormularioCarga(tk.Frame):
                                 (excursion_id, acomp.strip(), tipo_acomp))
 
                 # Insertar los grados (si es necesario)
-            for grado in grado_alumno.split(","):  # Suponiendo que los grados están separados por comas
-                    cursor.execute('''INSERT INTO grado (excursion_id, grado) VALUES (?, ?)''', 
-                    (excursion_id, grado.strip()))
+            # for grado in grado_alumno.split(","):  # Suponiendo que los grados están separados por comas
+            #         cursor.execute('''INSERT INTO grado (excursion_id, grado) VALUES (?, ?)''', 
+            #         (excursion_id, grado.strip()))
 
                     # Confirmar los cambios
                     conn.commit()
