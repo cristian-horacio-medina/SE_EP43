@@ -29,6 +29,9 @@ class FormularioCarga(tk.Frame):
         self.crear_tabs()  # Aquí lo llamas desde la instancia, usando `self`
         # Inicializa el contador de registros
         self.contador = 1
+        
+        #Variable para insertar datos a tabla excursion
+        var_tipo = tk.StringVar(value="docente")        
 
         # Configuración de la cuadrícula principal
         master.columnconfigure(0, weight=1)
@@ -204,7 +207,7 @@ class FormularioCarga(tk.Frame):
 
     def cargar_grados(self):
         try:
-            conexion = sqlite3.connect("C://Users//Papá//Documents//excursion.db")
+            conexion = sqlite3.connect("C://Users//Cristian//Documents//excursion.db")
             cursor = conexion.cursor()
             cursor.execute("SELECT idgrado, grado || ' ' || seccion || ' ' || turno AS grado_completo FROM grado;")
             resultados = cursor.fetchall()
@@ -584,7 +587,10 @@ class FormularioCarga(tk.Frame):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
                                     for child in self.tree.get_children()]
-
+        # Mostrar contenido en un MessageBox
+        #messagebox.showinfo("Contenido de registros", "\n".join(map(str, registros)))
+        print("Contenido de registros:", registros)
+                
         # Obtener valores de los campos de entrada (TextBox)
         lugar = self.lugar_entry.get().replace(" ", "_")
         fecha = self.fecha_entry.get().replace(
@@ -595,7 +601,7 @@ class FormularioCarga(tk.Frame):
         fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
-        acompanantes = self.datosacompanantes_entry.get()
+        acompañantes = self.datosacompañantes_entry.get()
         empresa_contratada = self.empresacontratada_entry.get()
         datos_infraestructura = self.datosinfraestructura_entry.get()
         hospitales = self.hospitales_entry.get()
@@ -653,45 +659,57 @@ class FormularioCarga(tk.Frame):
 
                 # Insertar los datos en la tabla excursion
             cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
-                                fecha_regreso, hora_regreso, lugar_estadia, acompanantes, empresa_contratada,
+                                fecha_regreso, hora_regreso, lugar_estadia, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, idgrado)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                                 (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
-                                hora_regreso, lugar_estadia, acompanantes, empresa_contratada,
+                                hora_regreso, lugar_estadia, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, idgrado))
 
                 # Obtener el ID de la excursión recién insertada
             excursion_id = cursor.lastrowid
-
-                # Insertar los registros de alumnos y acompañantes
+            
+            # Insertar los registros de alumnos y acompañantes
             for registro in registros:
-                    nombre_alumno, grado_alumno = registro[0], registro[1]
-                    cursor.execute('''INSERT INTO alumnos (excursion_id, nombre,idgrado) VALUES (?, ?, ?)''',
-                                (excursion_id, nombre_alumno, grado_alumno))
+                apellido_nombre = registro[1].strip()  # Eliminar espacios adicionales
+                
+                # Eliminar la coma
+                apellido_nombre = apellido_nombre.replace(',', '')
+                
+                # Dividir en dos partes: Apellido y Nombre
+                partes = apellido_nombre.split(' ', 1)  # El '1' asegura que solo se divide en la primera aparición del espacio
 
-                    # Insertar acompañantes (puedes adaptarlo según cómo estén definidos)
-                    # Ejemplo, si los acompañantes están separados por comas
-                    acompanante = acompanantes.split(",")
-            for acomp in acompanante:
-                    tipo_acomp = "Docente"  # Cambia esto según el caso
-                    rol = "responsable"  # Cambia esto según si el acompañante es responsable o reemplazante
-                    if tipo_acomp == "Docente":
-                        cursor.execute('''INSERT INTO acompanantes (excursion_id, APELLIDO, NOMBRE, tipo_acomp, rol) 
-                                        VALUES (?, ?, ?, ?, ?)''', 
-                                    (excursion_id, acomp.strip(), tipo_acomp, rol))
-                    else:
-                        cursor.execute('''INSERT INTO acompanantes (excursion_id, APELLIDO, NOMBRE, tipo_acomp, rol) 
-                                        VALUES (?, ?, ?, ?, ?)''', 
-                                    (excursion_id, acomp.strip(), tipo_acomp, rol))
+                # Asignar las partes a las variables
+                apellido = partes[0]  # Primer elemento
+                nombre = partes[1] if len(partes) > 1 else ""  # Segundo elemento o vacío si no hay más
+                dni = registro[2]
+                es_estudiante = registro[3].strip()  # Columna "x"
+                docente = registro[4].strip() if registro[4] else ""  # Columna "responsable" o ""
+                no_docente = registro[5].strip() if registro[5] else ""  # Columna "responsable" o ""
 
-                # Insertar los grados (si es necesario)
-            # for grado in grado_alumno.split(","):  # Suponiendo que los grados están separados por comas
-            #         cursor.execute('''INSERT INTO grado (excursion_id, grado) VALUES (?, ?)''', 
-            #         (excursion_id, grado.strip()))
+                if es_estudiante == "x":
+                    # Insertar en la tabla alumnos
+                    cursor.execute("""
+                        INSERT INTO alumnos (apellido,nombre, DNI, ALUMNO, excursion_id)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (apellido, nombre, dni, 'Estudiante', excursion_id))
 
-                    # Confirmar los cambios
-                    conn.commit()
-                    messagebox.showinfo("Éxito", "Datos guardados correctamente en la base de datos.")
+                if docente and not no_docente:  # Si es solo docente
+                    cursor.execute("""
+                        INSERT INTO acompanantes (apellido, nombre, DNI, DOCENTE, excursion_id)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (apellido, nombre, dni, docente, excursion_id))
+
+                if no_docente and not docente:  # Si es solo no docente
+                    cursor.execute("""
+                        INSERT INTO acompanantes (apellido, nombre, DNI, NO_DOCENTE, excursion_id)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (apellido, nombre, dni, no_docente, excursion_id))
+          
+                        
+            # Confirmar los cambios
+            conn.commit()
+            messagebox.showinfo("Éxito", "Datos guardados correctamente en la base de datos.")
 
         except Exception as e:
               conn.rollback()  # Revertir cambios en caso de error
