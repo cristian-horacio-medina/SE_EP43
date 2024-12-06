@@ -58,12 +58,13 @@ class FormularioCarga(tk.Frame):
     def crear_componentes_tabulador1(self, tabulador):
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
         tk.Label(tabulador, text="Lugar:").grid(
-            row=0, column=0, sticky='w', padx=5, pady=5)
-        self.lugar_entry = tk.Entry(tabulador, width=60)
-        self.lugar_entry.grid(row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=1, column=0, sticky='w', padx=5, pady=5)
+        self.lugar_entry = tk.Entry(tabulador, width=90)
+        self.lugar_entry.grid(row=1, column=1, columnspan=3, sticky='w', padx=5, pady=5)
         
+        tk.Label(tabulador, text="Grado:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
         self.combobox_grado = ttk.Combobox(tabulador, state="readonly")
-        self.combobox_grado.grid(row=0, column=2, padx=5, pady=5)
+        self.combobox_grado.grid(row=0, column=1, sticky="w", padx=5, pady=5)
         
 
          # Cargar datos en el Combobox
@@ -75,10 +76,9 @@ class FormularioCarga(tk.Frame):
             row=0, column=3, sticky='w', padx=5, pady=5)
 
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de salida:").grid(
-            row=1, column=0, sticky='w', padx=5, pady=5)
+        tk.Label(tabulador, text="Fecha de salida:").grid(row=0, column=1, sticky='e', padx=5, pady=5)
         self.fecha_entry = tk.Entry(tabulador, width=15)
-        self.fecha_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
+        self.fecha_entry.grid(row=0, column=2, sticky='w', padx=5, pady=5)
 
         # Añadido: Evento para formatear la fecha
         self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
@@ -106,10 +106,9 @@ class FormularioCarga(tk.Frame):
 
         # Radiobuttons para seleccionar rol
         tk.Radiobutton(tabulador, text="Estudiante", variable=self.rol_seleccionado,
-                       value="Estudiante").grid(row=4, column=0)
+                    value="Estudiante").grid(row=4, column=0)
 
-        # tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado, value="Docente").grid(row=4, column=1)
-        # tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado, value="No Docente").grid(row=4, column=2)
+      
 
         tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado,
                        value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
@@ -158,7 +157,7 @@ class FormularioCarga(tk.Frame):
         self.guardar_btn.grid(row=9, column=1, sticky='ew')
 
         self.cargar_btn = tk.Button(
-            tabulador, text="Cargar excursión", command=self.cargar_json)
+            tabulador, text="Cargar excursión", command=self.cargar_desde_sqlite)
         self.cargar_btn.grid(row=9, column=2, sticky='ew')
 
         self.generar_pdf_btn = tk.Button(
@@ -207,7 +206,9 @@ class FormularioCarga(tk.Frame):
 
     def cargar_grados(self):
         try:
-            conexion = sqlite3.connect("C://Users//Cristian//Documents//excursion.db")
+            db_path = os.path.join(os.path.expanduser(
+            "~"), "Documents", "Excursion.db")
+            conexion = sqlite3.connect(db_path)
             cursor = conexion.cursor()
             cursor.execute("SELECT idgrado, grado || ' ' || seccion || ' ' || turno AS grado_completo FROM grado;")
             resultados = cursor.fetchall()
@@ -735,70 +736,157 @@ class FormularioCarga(tk.Frame):
         self.lugar_entry.focus()  # Ubica el cursor en el campo Lugar
             
 
-    def cargar_json(self):
-        # Abrir diálogo para seleccionar archivo JSON dentro de la carpeta de backups
-        carpeta_documentos = os.path.join(os.path.expanduser(
-            "~"), "Documents", "backup_salidas_escolares")
-        file_path = filedialog.askopenfilename(
-            initialdir=carpeta_documentos,
-            title="Seleccionar archivo JSON",
-            filetypes=(("Archivos JSON", "*.json"),
-                       ("Todos los archivos", "*.*"))
-        )
+    # def cargar_json(self):
+    #     # Abrir diálogo para seleccionar archivo JSON dentro de la carpeta de backups
+    #     carpeta_documentos = os.path.join(os.path.expanduser(
+    #         "~"), "Documents", "backup_salidas_escolares")
+    #     file_path = filedialog.askopenfilename(
+    #         initialdir=carpeta_documentos,
+    #         title="Seleccionar archivo JSON",
+    #         filetypes=(("Archivos JSON", "*.json"),
+    #                    ("Todos los archivos", "*.*"))
+    #     )
+
+    #     # Verificar si se seleccionó un archivo
+    #     if not file_path:
+    #         messagebox.showinfo("Info", "No se seleccionó ningún archivo.")
+    #         return
+
+    #     # Cargar el archivo JSON
+    #     try:
+    #         with open(file_path, "r") as f:
+    #             data = json.load(f)
+
+    #         # Cargar "Lugar" y "Fecha" en los TextBox correspondientes
+    #         self.lugar_entry.delete(0, tk.END)
+    #         self.lugar_entry.insert(0, data.get("lugar", ""))
+
+    #         self.fecha_entry.delete(0, tk.END)
+    #         self.fecha_entry.insert(0, data.get("fecha", ""))
+
+    #         # Limpiar el Treeview antes de cargar nuevos datos
+    #         for item in self.tree.get_children():
+    #             self.tree.delete(item)
+
+    #         # Insertar los registros en el Treeview
+    #         for registro in data.get("registros", []):
+    #             self.tree.insert("", "end", values=registro)
+            
+    #         self.proyecto_entry.delete(0, tk.END)
+    #         self.proyecto_entry.insert(0, data.get("Nombre del proyecto", ""))
+    #         self.fechasalida_entry.delete(0, tk.END)
+    #         self.fechasalida_entry.insert(0, data.get("Fecha de salida", ""))
+    #         self.horasalida_entry.delete(0, tk.END)
+    #         self.horasalida_entry.insert(0, data.get("Hora de salida", ""))                   
+             
+    #         self.fecharegreso_entry.delete(0, tk.END)
+    #         self.fecharegreso_entry.insert(0, data.get("Fecha de regreso", "")) 
+    #         self.horaregreso_entry.delete(0, tk.END)
+    #         self.horaregreso_entry.insert(0, data.get("Hora de regreso", "")) 
+    #         self.lugarestadia_entry.delete(0, tk.END)
+    #         self.lugarestadia_entry.insert(0, data.get("Lugar de estadia", "")) 
+    #         self.datosacompañantes_entry.delete(0, tk.END)
+    #         self.datosacompañantes_entry.insert(0, data.get("Nombres y teléfonos de los acompañantes", ""))       
+    #         self.empresacontratada_entry.delete(0, tk.END)
+    #         self.empresacontratada_entry.insert(0, data.get("Empresa contratada", "")) 
+    #         self.datosinfraestructura_entry.delete(0, tk.END)
+    #         self.datosinfraestructura_entry.insert(0, data.get("Datos de infraestructura", ""))   
+    #         self.hospitales_entry.delete(0, tk.END)
+    #         self.hospitales_entry.insert(0, data.get("Hospitales y centros de salud", "")) 
+    #         self.otrosdatos_entry.delete(0, tk.END)
+    #         self.otrosdatos_entry.insert(0, data.get("Otros datos", ""))  
+            
+    #         messagebox.showinfo("Éxito", "Registros cargados correctamente.")
+    #     except Exception as e:
+           #messagebox.showerror("Error", f"No se pudo cargar el archivo: {e}")    
+
+
+    def cargar_desde_sqlite(self):
+        # Ruta de la base de datos SQLite
+        db_path = filedialog.askopenfilename(
+            title="Seleccionar base de datos SQLite",
+            filetypes=(("Archivos SQLite", "*.sqlite;*.db"), ("Todos los archivos", "*.*")))
 
         # Verificar si se seleccionó un archivo
-        if not file_path:
-            messagebox.showinfo("Info", "No se seleccionó ningún archivo.")
+        if not db_path:
+            messagebox.showinfo("Info", "No se seleccionó ninguna base de datos.")
             return
 
-        # Cargar el archivo JSON
         try:
-            with open(file_path, "r") as f:
-                data = json.load(f)
+            # Conectar a la base de datos
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            excursion_id = 173  # Puedes reemplazar este valor dinámicamente
+            
+            # Obtener datos de la tabla principal
+            cursor.execute("SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes, empresa_contratada, datos_infraestructura, hospitales, otros_datos FROM excursion WHERE excursion_id = ?", (excursion_id,))
+            excursion = cursor.fetchone()
 
-            # Cargar "Lugar" y "Fecha" en los TextBox correspondientes
+            if not excursion:
+                messagebox.showerror("Error", "No se encontraron datos en la tabla.")
+                return
+
+            # Cargar los datos en los Entry correspondientes
             self.lugar_entry.delete(0, tk.END)
-            self.lugar_entry.insert(0, data.get("lugar", ""))
+            self.lugar_entry.insert(0, excursion[0])
 
             self.fecha_entry.delete(0, tk.END)
-            self.fecha_entry.insert(0, data.get("fecha", ""))
+            self.fecha_entry.insert(0, excursion[1])
+
+            self.proyecto_entry.delete(0, tk.END)
+            self.proyecto_entry.insert(0, excursion[2])
+
+            self.fechasalida_entry.delete(0, tk.END)
+            self.fechasalida_entry.insert(0, excursion[3])
+
+            self.horasalida_entry.delete(0, tk.END)
+            self.horasalida_entry.insert(0, excursion[4])
+
+            self.fecharegreso_entry.delete(0, tk.END)
+            self.fecharegreso_entry.insert(0, excursion[5])
+
+            self.horaregreso_entry.delete(0, tk.END)
+            self.horaregreso_entry.insert(0, excursion[6])
+
+            self.lugarestadia_entry.delete(0, tk.END)
+            self.lugarestadia_entry.insert(0, excursion[7])
+
+            self.datosacompañantes_entry.delete(0, tk.END)
+            self.datosacompañantes_entry.insert(0, excursion[8])
+
+            self.empresacontratada_entry.delete(0, tk.END)
+            self.empresacontratada_entry.insert(0, excursion[9])
+
+            self.datosinfraestructura_entry.delete(0, tk.END)
+            self.datosinfraestructura_entry.insert(0, excursion[10])
+
+            self.hospitales_entry.delete(0, tk.END)
+            self.hospitales_entry.insert(0, excursion[11])
+
+            self.otrosdatos_entry.delete(0, tk.END)
+            self.otrosdatos_entry.insert(0, excursion[12])
 
             # Limpiar el Treeview antes de cargar nuevos datos
             for item in self.tree.get_children():
                 self.tree.delete(item)
 
-            # Insertar los registros en el Treeview
-            for registro in data.get("registros", []):
+            
+            # Obtener registros para el Treeview
+            cursor.execute("SELECT * FROM registros WHERE excursion_id = ?", (excursion_id,))
+            registros = cursor.fetchall()
+
+            for registro in registros:
                 self.tree.insert("", "end", values=registro)
-            
-            self.proyecto_entry.delete(0, tk.END)
-            self.proyecto_entry.insert(0, data.get("Nombre del proyecto", ""))
-            self.fechasalida_entry.delete(0, tk.END)
-            self.fechasalida_entry.insert(0, data.get("Fecha de salida", ""))
-            self.horasalida_entry.delete(0, tk.END)
-            self.horasalida_entry.insert(0, data.get("Hora de salida", ""))                   
-             
-            self.fecharegreso_entry.delete(0, tk.END)
-            self.fecharegreso_entry.insert(0, data.get("Fecha de regreso", "")) 
-            self.horaregreso_entry.delete(0, tk.END)
-            self.horaregreso_entry.insert(0, data.get("Hora de regreso", "")) 
-            self.lugarestadia_entry.delete(0, tk.END)
-            self.lugarestadia_entry.insert(0, data.get("Lugar de estadia", "")) 
-            self.datosacompañantes_entry.delete(0, tk.END)
-            self.datosacompañantes_entry.insert(0, data.get("Nombres y teléfonos de los acompañantes", ""))       
-            self.empresacontratada_entry.delete(0, tk.END)
-            self.empresacontratada_entry.insert(0, data.get("Empresa contratada", "")) 
-            self.datosinfraestructura_entry.delete(0, tk.END)
-            self.datosinfraestructura_entry.insert(0, data.get("Datos de infraestructura", ""))   
-            self.hospitales_entry.delete(0, tk.END)
-            self.hospitales_entry.insert(0, data.get("Hospitales y centros de salud", "")) 
-            self.otrosdatos_entry.delete(0, tk.END)
-            self.otrosdatos_entry.insert(0, data.get("Otros datos", ""))  
-            
+
             messagebox.showinfo("Éxito", "Registros cargados correctamente.")
         except Exception as e:
-           messagebox.showerror("Error", f"No se pudo cargar el archivo: {e}")    
-
+            messagebox.showerror("Error", f"No se pudo cargar los datos: {e}")
+        finally:
+            if conn:
+                conn.close()
+    
+    
+    
     def get_resource_path(self, relative_path):
         # Resuelve la ruta de los recursos en modo empaquetado o en desarrollo
         base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
