@@ -63,11 +63,11 @@ class FormularioCarga(tk.Frame):
         self.lugar_entry.grid(row=1, column=1, columnspan=3, sticky='w', padx=5, pady=5)
         
         tk.Label(tabulador, text="Grado:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
-        self.combobox_grado = ttk.Combobox(tabulador, state="readonly")
+        self.combobox_grado = ttk.Combobox(tabulador, state="readonly", width=10)
         self.combobox_grado.grid(row=0, column=1, sticky="w", padx=5, pady=5)
         
-        self.combobox_excursion = ttk.Combobox(tabulador, state="readonly")
-        self.combobox_excursion.grid(row=0, column=3, sticky="e", padx=5, pady=5)  # Cambia la fila y columna según sea necesario
+        self.combobox_excursion = ttk.Combobox(tabulador, state="readonly", width=40)
+        self.combobox_excursion.grid(row=5, column=3, sticky="e", padx=2, pady=2)  # Cambia la fila y columna según sea necesario
         self.combobox_excursiones()
         
         # Cargar datos en el Combobox
@@ -224,33 +224,31 @@ class FormularioCarga(tk.Frame):
     def combobox_excursiones(self):
         try:
             # Conectar a la base de datos SQLite
-            db_path = os.path.join(os.path.expanduser(
-                "~"), "Documents", "Excursion.db")
+            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
 
-            # Obtener las excursiones de la base de datos
-            cursor.execute("SELECT lugar, fecha FROM excursion")
+            # Obtener las excursiones con su ID, lugar, fecha y grado
+            cursor.execute("""
+                SELECT IdEXCURSION, lugar, fecha, 
+                    (SELECT grado || seccion || turno FROM grado WHERE grado.IdGRADO = excursion.IdGRADO) AS grado
+                FROM excursion
+            """)
             excursiones = cursor.fetchall()
-            
-            self.excursiones = {fila[1]: fila[0] for fila in excursiones}  # Diccionario de grados
-            # Crear una lista de opciones en formato 'fecha - lugar' para mostrar en el Combobox
-            combobox_values = [f"{fecha} - {lugar}" for fecha, lugar in self.excursiones.items()]
+
+            # Crear un diccionario para mapear las opciones del Combobox al ID de la excursión
+            self.excursiones = {f"{fecha}-{grado}-{lugar}": IdEXCURSION
+                                for IdEXCURSION, lugar, fecha, grado in excursiones}
 
             # Asignar las opciones al Combobox
-            self.combobox_excursion["values"] = combobox_values
-
-            # Ajustar el tamaño del Combobox (si es necesario, dependiendo del contenido)
-            # Si el tamaño es insuficiente, puedes hacer el ajuste manualmente
-            #max_length = max(len(f"{fecha} - {lugar}") for fecha, lugar in self.excursiones.items())
-            #self.combobox_excursion.config(width=max_length)  # Ajustar el ancho al máximo tamaño del texto
+            self.combobox_excursion["values"] = list(self.excursiones.keys())
         except Exception as e:
             print(f"Error al cargar las excursiones: {e}")
-
         finally:
             # Cerrar la conexión a la base de datos
             conn.close()
-        
+
+
     
     def mostrar_combobox(self):
         # Ocultar ambos Combobox
@@ -626,9 +624,8 @@ class FormularioCarga(tk.Frame):
         print("Contenido de registros:", registros)
                 
         # Obtener valores de los campos de entrada (TextBox)
-        lugar = self.lugar_entry.get().replace(" ", "_")
-        fecha = self.fecha_entry.get().replace(
-            "/", "-")  # Reemplazar barras por guiones
+        lugar = self.lugar_entry.get()
+        fecha = self.fecha_entry.get()        
         nombre_proyecto = self.proyecto_entry.get()
         fecha_salida = self.fechasalida_entry.get()
         hora_salida = self.horasalida_entry.get()
