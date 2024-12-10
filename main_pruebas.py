@@ -884,41 +884,38 @@ class FormularioCarga(tk.Frame):
 
             # Consulta para Treeview
             cursor.execute(
-                """SELECT 
-                    alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
-                    alumnos.DNI AS DNI, 
-                    1 AS Alumno, 
-                    0 AS Docente, 
-                    0 AS NoDocente
-                FROM 
-                    alumnos
-                INNER JOIN 
-                    excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
-                WHERE 
-                    excursion.IdEXCURSION = ?
-                
-                UNION ALL
-                
-                SELECT 
-                    acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre, 
-                    acompanantes.DNI AS DNI, 
-                    0 AS Alumno, 
-                    CASE WHEN acompanantes.DOCENTE IS NOT NULL THEN acompanantes.DOCENTE ELSE '' END AS Docente,
-                    CASE WHEN acompanantes.NO_DOCENTE IS NOT NULL THEN acompanantes.NO_DOCENTE ELSE '' END AS NoDocente
-                FROM 
-                    acompanantes
-                INNER JOIN 
-                    excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
-                WHERE 
-                    excursion.IdEXCURSION = ?
-                ORDER BY 
-                    Alumno DESC, 
-                    Apellido_Nombre ASC
+                """SELECT
+                                alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+                                alumnos.DNI AS DNI,
+                                "x" AS Alumno,
+                                "" AS Docente,
+                                "" AS NoDocente
+                            FROM
+                                alumnos
+                            INNER JOIN
+                                excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
+                            WHERE
+                                excursion.IdEXCURSION = ?
+
+                            UNION ALL
+
+                            SELECT
+                                acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
+                                acompanantes.DNI AS DNI,
+                                "" AS Alumno,
+                                IFNULL(acompanantes.DOCENTE, "") AS Docente,
+                                IFNULL(acompanantes.NO_DOCENTE, "") AS NoDocente
+                            FROM
+                                acompanantes
+                            INNER JOIN
+                                excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
+                            WHERE
+                                excursion.IdEXCURSION = ?
                         """,
                 (IdEXCURSION, IdEXCURSION) #(fecha, fecha)
             )
             registros = cursor.fetchall()
-            #print(registros)
+            print(registros)
             for registro in registros:
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
                 self.tree.insert("", "end", values=registro_desplazado)
