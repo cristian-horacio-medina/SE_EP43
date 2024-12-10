@@ -670,23 +670,23 @@ class FormularioCarga(tk.Frame):
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    excursion_id INTEGER,
+                                    IdEXCURSION INTEGER,
                                     nombre TEXT,
                                     grado TEXT,
-                                    FOREIGN KEY(excursion_id) REFERENCES excursion(id))''')
+                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS acompañantes (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    excursion_id INTEGER,
+                                    IdEXCURSION INTEGER,
                                     nombre TEXT,
                                     tipo TEXT,  -- Puede ser 'Docente' o 'No Docente'
-                                    FOREIGN KEY(excursion_id) REFERENCES excursion(id))''')
+                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS grado (
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    excursion_id INTEGER,
+                                    IdEXCURSION INTEGER,
                                     grado TEXT,
-                                    FOREIGN KEY(excursion_id) REFERENCES excursion(id))''')
+                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
                 # Insertar los datos en la tabla excursion
             cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
@@ -698,11 +698,11 @@ class FormularioCarga(tk.Frame):
                                 datos_infraestructura, hospitales, otros_datos, idgrado))
 
                 # Obtener el ID de la excursión recién insertada
-            excursion_id = cursor.lastrowid
+            IdEXCURSION = cursor.lastrowid
             
             # Insertar los registros de alumnos y acompañantes
             for registro in registros:
-                apellido_nombre = registro[1].strip()  # Eliminar espacios adicionales
+                apellido_nombre = str(registro[1]).strip()  # Eliminar espacios adicionales
                 
                 # Eliminar la coma
                 apellido_nombre = apellido_nombre.replace(',', '')
@@ -714,28 +714,28 @@ class FormularioCarga(tk.Frame):
                 apellido = partes[0]  # Primer elemento
                 nombre = partes[1] if len(partes) > 1 else ""  # Segundo elemento o vacío si no hay más
                 dni = registro[2]
-                es_estudiante = registro[3].strip()  # Columna "x"
-                docente = registro[4].strip() if registro[4] else ""  # Columna "responsable" o ""
-                no_docente = registro[5].strip() if registro[5] else ""  # Columna "responsable" o ""
+                es_estudiante = str(registro[3]).strip()  # Columna "x"
+                docente = str(registro[4]).strip() if registro[4] else ""  # Columna "responsable" o ""
+                no_docente = str(registro[5]).strip() if registro[5] else ""  # Columna "responsable" o ""
 
                 if es_estudiante == "x":
                     # Insertar en la tabla alumnos
                     cursor.execute("""
-                        INSERT INTO alumnos (apellido,nombre, DNI, ALUMNO, excursion_id)
+                        INSERT INTO alumnos (apellido,nombre, DNI, ALUMNO, IdEXCURSION)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, 'Estudiante', excursion_id))
+                    """, (apellido, nombre, dni, 'Estudiante', IdEXCURSION))
 
                 if docente and not no_docente:  # Si es solo docente
                     cursor.execute("""
-                        INSERT INTO acompanantes (apellido, nombre, DNI, DOCENTE, excursion_id)
+                        INSERT INTO acompanantes (apellido, nombre, DNI, DOCENTE, IdEXCURSION)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, docente, excursion_id))
+                    """, (apellido, nombre, dni, docente, IdEXCURSION))
 
                 if no_docente and not docente:  # Si es solo no docente
                     cursor.execute("""
-                        INSERT INTO acompanantes (apellido, nombre, DNI, NO_DOCENTE, excursion_id)
+                        INSERT INTO acompanantes (apellido, nombre, DNI, NO_DOCENTE, IdEXCURSION)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, no_docente, excursion_id))
+                    """, (apellido, nombre, dni, no_docente, IdEXCURSION))
           
                         
             # Confirmar los cambios
@@ -832,6 +832,8 @@ class FormularioCarga(tk.Frame):
 
 
     def cargar_desde_sqlite(self):
+        
+        
         db_path = filedialog.askopenfilename(
             title="Seleccionar base de datos SQLite",
             filetypes=(("Archivos SQLite", "*.sqlite;*.db"), ("Todos los archivos", "*.*")))
@@ -844,13 +846,19 @@ class FormularioCarga(tk.Frame):
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            fecha = '24/10/2024'
-
+            #fecha = '24/10/2024'
+            # Obtener la excursion seleccionada desde el Combobox
+            excursion_seleccionada = self.combobox_excursion.get()
+            # Obtener el ID de la excursion desde el diccionario self.excursiones
+            IdEXCURSION = self.excursiones.get(excursion_seleccionada)
+            
             cursor.execute("SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, "
                         "fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes, "
                         "empresa_contratada, datos_infraestructura, hospitales, otros_datos "
-                        "FROM excursion WHERE fecha = ?", (fecha,))
+                        "FROM excursion WHERE IdEXCURSION = ?", (IdEXCURSION,))    #(fecha,))
             excursion = cursor.fetchone()
+            
+            print(excursion)
 
             if not excursion:
                 messagebox.showerror("Error", "No se encontraron datos en la tabla principal.")
@@ -887,7 +895,7 @@ class FormularioCarga(tk.Frame):
                 INNER JOIN 
                     excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
                 WHERE 
-                    excursion.fecha = ?
+                    excursion.IdEXCURSION = ?
                 
                 UNION ALL
                 
@@ -902,12 +910,12 @@ class FormularioCarga(tk.Frame):
                 INNER JOIN 
                     excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
                 WHERE 
-                    excursion.fecha = ?
+                    excursion.IdEXCURSION = ?
                 ORDER BY 
                     Alumno DESC, 
                     Apellido_Nombre ASC
                         """,
-                (fecha, fecha)
+                (IdEXCURSION, IdEXCURSION) #(fecha, fecha)
             )
             registros = cursor.fetchall()
             #print(registros)
