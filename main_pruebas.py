@@ -232,7 +232,7 @@ class FormularioCarga(tk.Frame):
             cursor.execute("""
                 SELECT IdEXCURSION, lugar, fecha, 
                     (SELECT grado || seccion || turno FROM grado WHERE grado.IdGRADO = excursion.IdGRADO) AS grado
-                FROM excursion
+                FROM excursion ORDER BY fecha
             """)
             excursiones = cursor.fetchall()
 
@@ -601,7 +601,7 @@ class FormularioCarga(tk.Frame):
         try:
           # Crear las tablas si no existen
             cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
-                                    EXCURSION_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdEXCURSION INTEGER PRIMARY KEY AUTOINCREMENT,
                                     lugar TEXT,
                                     fecha TEXT,
                                     nombre_proyecto TEXT,
@@ -617,21 +617,21 @@ class FormularioCarga(tk.Frame):
                                     otros_datos TEXT)''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdALUMNO INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
                                     nombre TEXT,
                                     grado TEXT,
                                     FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS acompañantes (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdACOMPAÑANTES INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
                                     nombre TEXT,
                                     tipo TEXT,  -- Puede ser 'Docente' o 'No Docente'
                                     FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS grado (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdGRADO INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
                                     grado TEXT,
                                     FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
@@ -713,8 +713,8 @@ class FormularioCarga(tk.Frame):
         self.reiniciar_formulario()
         self.lugar_entry.focus()  # Ubica el cursor en el campo Lugar
             
-
     
+
     def cargar_desde_sqlite(self, event=None):
         # Verificar si hay una excursión seleccionada
         excursion_seleccionada = self.combobox_excursion.get()
@@ -818,6 +818,7 @@ class FormularioCarga(tk.Frame):
                     Apellido_Nombre ASC
             """, (IdEXCURSION, IdEXCURSION))
             registros = cursor.fetchall()
+            print(registros)
 
             for registro in registros:
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
@@ -855,7 +856,7 @@ class FormularioCarga(tk.Frame):
         registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
 
         # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-        estudiantes = sorted([r for r in registros if r[3] == "x"], key=lambda x: x[1])
+        estudiantes = sorted([r for r in registros if r[3] == "X"], key=lambda x: x[1])
         docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
         no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
         

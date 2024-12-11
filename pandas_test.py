@@ -4,7 +4,7 @@ import pandas as pd
 
 print(os.getcwd())
 
-os.chdir(r'C:\Users\Cristian\Documents')
+os.chdir(r'C:\Users\Papá\Documents')
 
 #Imprimo serie#
 
