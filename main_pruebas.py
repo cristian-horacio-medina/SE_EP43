@@ -632,7 +632,7 @@ class FormularioCarga(tk.Frame):
         fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
-        acompañantes = self.datosacompañantes_entry.get()
+        datos_acompañantes = self.datosacompañantes_entry.get()
         empresa_contratada = self.empresacontratada_entry.get()
         datos_infraestructura = self.datosinfraestructura_entry.get()
         hospitales = self.hospitales_entry.get()
@@ -831,34 +831,130 @@ class FormularioCarga(tk.Frame):
            #messagebox.showerror("Error", f"No se pudo cargar el archivo: {e}")    
 
 
-    def cargar_desde_sqlite(self):
+    # def cargar_desde_sqlite(self):
         
         
-        db_path = filedialog.askopenfilename(
-            title="Seleccionar base de datos SQLite",
-            filetypes=(("Archivos SQLite", "*.sqlite;*.db"), ("Todos los archivos", "*.*")))
+    #     db_path = filedialog.askopenfilename(
+    #         title="Seleccionar base de datos SQLite",
+    #         filetypes=(("Archivos SQLite", "*.sqlite;*.db"), ("Todos los archivos", "*.*")))
 
-        if not db_path or not db_path.endswith((".sqlite", ".db")):
-            messagebox.showerror("Error", "Por favor selecciona un archivo SQLite válido.")
+    #     if not db_path or not db_path.endswith((".sqlite", ".db")):
+    #         messagebox.showerror("Error", "Por favor selecciona un archivo SQLite válido.")
+    #         return
+
+        
+    #     try:
+    #         conn = sqlite3.connect(db_path)
+    #         cursor = conn.cursor()
+    #         #fecha = '24/10/2024'
+    #         # Obtener la excursion seleccionada desde el Combobox
+    #         excursion_seleccionada = self.combobox_excursion.get()
+    #         # Obtener el ID de la excursion desde el diccionario self.excursiones
+    #         IdEXCURSION = self.excursiones.get(excursion_seleccionada)
+            
+    #         cursor.execute("SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, "
+    #                     "fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes, "
+    #                     "empresa_contratada, datos_infraestructura, hospitales, otros_datos "
+    #                     "FROM excursion WHERE IdEXCURSION = ?", (IdEXCURSION,))    #(fecha,))
+    #         excursion = cursor.fetchone()
+            
+    #         print(excursion)
+
+    #         if not excursion:
+    #             messagebox.showerror("Error", "No se encontraron datos en la tabla principal.")
+    #             return
+
+    #         # Cargar datos en los Entry
+    #         entries = [
+    #             self.lugar_entry, self.fecha_entry, self.proyecto_entry,
+    #             self.fechasalida_entry, self.horasalida_entry,
+    #             self.fecharegreso_entry, self.horaregreso_entry,
+    #             self.lugarestadia_entry, self.datosacompañantes_entry,
+    #             self.empresacontratada_entry, self.datosinfraestructura_entry,
+    #             self.hospitales_entry, self.otrosdatos_entry
+    #         ]
+
+    #         for i, value in enumerate(excursion):
+    #             entries[i].delete(0, tk.END)
+    #             entries[i].insert(0, value if value is not None else "")
+
+    #         # Limpiar Treeview
+    #         for item in self.tree.get_children():
+    #             self.tree.delete(item)
+
+    #         # Consulta para Treeview
+    #         cursor.execute(
+    #             """SELECT
+    #                             alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+    #                             alumnos.DNI AS DNI,
+    #                             "x" AS Alumno,
+    #                             "" AS Docente,
+    #                             "" AS NoDocente
+    #                         FROM
+    #                             alumnos
+    #                         INNER JOIN
+    #                             excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
+    #                         WHERE
+    #                             excursion.IdEXCURSION = ?
+
+    #                         UNION ALL
+
+    #                         SELECT
+    #                             acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
+    #                             acompanantes.DNI AS DNI,
+    #                             "" AS Alumno,
+    #                             IFNULL(acompanantes.DOCENTE, "") AS Docente,
+    #                             IFNULL(acompanantes.NO_DOCENTE, "") AS NoDocente
+    #                         FROM
+    #                             acompanantes
+    #                         INNER JOIN
+    #                             excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
+    #                         WHERE
+    #                             excursion.IdEXCURSION = ?
+    #                     """,
+    #             (IdEXCURSION, IdEXCURSION) #(fecha, fecha)
+    #         )
+    #         registros = cursor.fetchall()
+    #         print(registros)
+    #         for registro in registros:
+    #             registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
+    #             self.tree.insert("", "end", values=registro_desplazado)
+
+    #         messagebox.showinfo("Éxito", "Registros cargados correctamente.")
+    #     except Exception as e:
+    #         messagebox.showerror("Error", f"Error al cargar los datos desde {db_path}: {e}")
+    #     finally:
+    #         if conn:
+    #             conn.close()
+
+    def cargar_desde_sqlite(self, event=None):
+        # Verificar si hay una excursión seleccionada
+        excursion_seleccionada = self.combobox_excursion.get()
+        if not excursion_seleccionada:
+            messagebox.showwarning("Advertencia", "Por favor, selecciona una excursión.")
             return
 
-        
+        # Ruta fija de la base de datos
+        db_path = os.path.join(os.path.expanduser(
+            "~"), "Documents", "Excursion.db")
+
         try:
+            # Conexión a la base de datos
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            #fecha = '24/10/2024'
-            # Obtener la excursion seleccionada desde el Combobox
-            excursion_seleccionada = self.combobox_excursion.get()
-            # Obtener el ID de la excursion desde el diccionario self.excursiones
+
+            # Obtener el ID de la excursión seleccionada desde el diccionario
             IdEXCURSION = self.excursiones.get(excursion_seleccionada)
-            
-            cursor.execute("SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, "
-                        "fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes, "
-                        "empresa_contratada, datos_infraestructura, hospitales, otros_datos "
-                        "FROM excursion WHERE IdEXCURSION = ?", (IdEXCURSION,))    #(fecha,))
+
+            # Obtener los datos de la excursión seleccionada
+            cursor.execute("""
+                SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
+                    fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes,
+                    empresa_contratada, datos_infraestructura, hospitales, otros_datos, IdGRADO
+                FROM excursion
+                WHERE IdEXCURSION = ?
+            """, (IdEXCURSION,))
             excursion = cursor.fetchone()
-            
-            print(excursion)
 
             if not excursion:
                 messagebox.showerror("Error", "No se encontraron datos en la tabla principal.")
@@ -874,48 +970,67 @@ class FormularioCarga(tk.Frame):
                 self.hospitales_entry, self.otrosdatos_entry
             ]
 
-            for i, value in enumerate(excursion):
+            for i, value in enumerate(excursion[:-1]):  # Excluimos el valor 'IdGRADO' que está al final
                 entries[i].delete(0, tk.END)
                 entries[i].insert(0, value if value is not None else "")
+
+            # Obtener la descripción del grado usando IdGRADO
+            IdGRADO = excursion[-1]  # El último valor en la tupla es 'IdGRADO'
+            cursor.execute("""
+                SELECT grado || seccion || turno 
+                FROM grado 
+                WHERE IdGRADO = ?
+            """, (IdGRADO,))
+            grado_desc = cursor.fetchone()
+
+            if grado_desc:
+                # Cargar la descripción del grado en el combo_grado
+                self.combobox_grado.set(grado_desc[0] if grado_desc[0] is not None else "")
+            else:
+                self.combobox_grado.set("")
+
+            # Bloquear el ComboBox para evitar cambios accidentales
+            self.combobox_grado.config(state="disabled")
 
             # Limpiar Treeview
             for item in self.tree.get_children():
                 self.tree.delete(item)
 
             # Consulta para Treeview
-            cursor.execute(
-                """SELECT
-                                alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
-                                alumnos.DNI AS DNI,
-                                "x" AS Alumno,
-                                "" AS Docente,
-                                "" AS NoDocente
-                            FROM
-                                alumnos
-                            INNER JOIN
-                                excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
-                            WHERE
-                                excursion.IdEXCURSION = ?
-
-                            UNION ALL
-
-                            SELECT
-                                acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
-                                acompanantes.DNI AS DNI,
-                                "" AS Alumno,
-                                IFNULL(acompanantes.DOCENTE, "") AS Docente,
-                                IFNULL(acompanantes.NO_DOCENTE, "") AS NoDocente
-                            FROM
-                                acompanantes
-                            INNER JOIN
-                                excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
-                            WHERE
-                                excursion.IdEXCURSION = ?
-                        """,
-                (IdEXCURSION, IdEXCURSION) #(fecha, fecha)
-            )
+            cursor.execute("""
+                SELECT 
+                    alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+                    alumnos.DNI AS DNI, 
+                    1 AS Alumno, 
+                    0 AS Docente, 
+                    0 AS NoDocente
+                FROM 
+                    alumnos
+                INNER JOIN 
+                    excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
+                WHERE 
+                    excursion.IdEXCURSION = ?
+                
+                UNION ALL
+                
+                SELECT 
+                    acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre, 
+                    acompanantes.DNI AS DNI, 
+                    0 AS Alumno, 
+                    CASE WHEN acompanantes.DOCENTE IS NOT NULL THEN acompanantes.DOCENTE ELSE '' END AS Docente,
+                    CASE WHEN acompanantes.NO_DOCENTE IS NOT NULL THEN acompanantes.NO_DOCENTE ELSE '' END AS NoDocente
+                FROM 
+                    acompanantes
+                INNER JOIN 
+                    excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
+                WHERE 
+                    excursion.IdEXCURSION = ?
+                ORDER BY 
+                    Alumno DESC, 
+                    Apellido_Nombre ASC
+            """, (IdEXCURSION, IdEXCURSION))
             registros = cursor.fetchall()
-            print(registros)
+
             for registro in registros:
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
                 self.tree.insert("", "end", values=registro_desplazado)
@@ -927,8 +1042,13 @@ class FormularioCarga(tk.Frame):
             if conn:
                 conn.close()
 
-    
-    
+        # Asociar el evento Enter al Combobox para cargar los datos
+        self.combobox_excursion.bind("<Return>", self.cargar_desde_sqlite)
+
+
+
+            
+            
     
     def get_resource_path(self, relative_path):
         # Resuelve la ruta de los recursos en modo empaquetado o en desarrollo
