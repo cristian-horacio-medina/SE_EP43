@@ -1001,9 +1001,9 @@ class FormularioCarga(tk.Frame):
                 SELECT 
                     alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
                     alumnos.DNI AS DNI, 
-                    1 AS Alumno, 
-                    0 AS Docente, 
-                    0 AS NoDocente
+                    "X" AS Alumno, 
+                    "" AS Docente, 
+                    "" AS NoDocente
                 FROM 
                     alumnos
                 INNER JOIN 
@@ -1016,7 +1016,7 @@ class FormularioCarga(tk.Frame):
                 SELECT 
                     acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre, 
                     acompanantes.DNI AS DNI, 
-                    0 AS Alumno, 
+                    "" AS Alumno, 
                     CASE WHEN acompanantes.DOCENTE IS NOT NULL THEN acompanantes.DOCENTE ELSE '' END AS Docente,
                     CASE WHEN acompanantes.NO_DOCENTE IS NOT NULL THEN acompanantes.NO_DOCENTE ELSE '' END AS NoDocente
                 FROM 
