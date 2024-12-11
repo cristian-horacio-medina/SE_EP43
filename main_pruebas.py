@@ -232,7 +232,7 @@ class FormularioCarga(tk.Frame):
             cursor.execute("""
                 SELECT IdEXCURSION, lugar, fecha, 
                     (SELECT grado || seccion || turno FROM grado WHERE grado.IdGRADO = excursion.IdGRADO) AS grado
-                FROM excursion
+                FROM excursion ORDER BY fecha
             """)
             excursiones = cursor.fetchall()
 
@@ -653,7 +653,7 @@ class FormularioCarga(tk.Frame):
         try:
           # Crear las tablas si no existen
             cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
-                                    EXCURSION_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdEXCURSION INTEGER PRIMARY KEY AUTOINCREMENT,
                                     lugar TEXT,
                                     fecha TEXT,
                                     nombre_proyecto TEXT,
@@ -669,21 +669,21 @@ class FormularioCarga(tk.Frame):
                                     otros_datos TEXT)''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdALUMNO INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
                                     nombre TEXT,
                                     grado TEXT,
                                     FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS acompañantes (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdACOMPAÑANTES INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
                                     nombre TEXT,
                                     tipo TEXT,  -- Puede ser 'Docente' o 'No Docente'
                                     FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS grado (
-                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    IdGRADO INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
                                     grado TEXT,
                                     FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
@@ -765,167 +765,7 @@ class FormularioCarga(tk.Frame):
         self.reiniciar_formulario()
         self.lugar_entry.focus()  # Ubica el cursor en el campo Lugar
             
-
-    # def cargar_json(self):
-    #     # Abrir diálogo para seleccionar archivo JSON dentro de la carpeta de backups
-    #     carpeta_documentos = os.path.join(os.path.expanduser(
-    #         "~"), "Documents", "backup_salidas_escolares")
-    #     file_path = filedialog.askopenfilename(
-    #         initialdir=carpeta_documentos,
-    #         title="Seleccionar archivo JSON",
-    #         filetypes=(("Archivos JSON", "*.json"),
-    #                    ("Todos los archivos", "*.*"))
-    #     )
-
-    #     # Verificar si se seleccionó un archivo
-    #     if not file_path:
-    #         messagebox.showinfo("Info", "No se seleccionó ningún archivo.")
-    #         return
-
-    #     # Cargar el archivo JSON
-    #     try:
-    #         with open(file_path, "r") as f:
-    #             data = json.load(f)
-
-    #         # Cargar "Lugar" y "Fecha" en los TextBox correspondientes
-    #         self.lugar_entry.delete(0, tk.END)
-    #         self.lugar_entry.insert(0, data.get("lugar", ""))
-
-    #         self.fecha_entry.delete(0, tk.END)
-    #         self.fecha_entry.insert(0, data.get("fecha", ""))
-
-    #         # Limpiar el Treeview antes de cargar nuevos datos
-    #         for item in self.tree.get_children():
-    #             self.tree.delete(item)
-
-    #         # Insertar los registros en el Treeview
-    #         for registro in data.get("registros", []):
-    #             self.tree.insert("", "end", values=registro)
-            
-    #         self.proyecto_entry.delete(0, tk.END)
-    #         self.proyecto_entry.insert(0, data.get("Nombre del proyecto", ""))
-    #         self.fechasalida_entry.delete(0, tk.END)
-    #         self.fechasalida_entry.insert(0, data.get("Fecha de salida", ""))
-    #         self.horasalida_entry.delete(0, tk.END)
-    #         self.horasalida_entry.insert(0, data.get("Hora de salida", ""))                   
-             
-    #         self.fecharegreso_entry.delete(0, tk.END)
-    #         self.fecharegreso_entry.insert(0, data.get("Fecha de regreso", "")) 
-    #         self.horaregreso_entry.delete(0, tk.END)
-    #         self.horaregreso_entry.insert(0, data.get("Hora de regreso", "")) 
-    #         self.lugarestadia_entry.delete(0, tk.END)
-    #         self.lugarestadia_entry.insert(0, data.get("Lugar de estadia", "")) 
-    #         self.datosacompañantes_entry.delete(0, tk.END)
-    #         self.datosacompañantes_entry.insert(0, data.get("Nombres y teléfonos de los acompañantes", ""))       
-    #         self.empresacontratada_entry.delete(0, tk.END)
-    #         self.empresacontratada_entry.insert(0, data.get("Empresa contratada", "")) 
-    #         self.datosinfraestructura_entry.delete(0, tk.END)
-    #         self.datosinfraestructura_entry.insert(0, data.get("Datos de infraestructura", ""))   
-    #         self.hospitales_entry.delete(0, tk.END)
-    #         self.hospitales_entry.insert(0, data.get("Hospitales y centros de salud", "")) 
-    #         self.otrosdatos_entry.delete(0, tk.END)
-    #         self.otrosdatos_entry.insert(0, data.get("Otros datos", ""))  
-            
-    #         messagebox.showinfo("Éxito", "Registros cargados correctamente.")
-    #     except Exception as e:
-           #messagebox.showerror("Error", f"No se pudo cargar el archivo: {e}")    
-
-
-    # def cargar_desde_sqlite(self):
-        
-        
-    #     db_path = filedialog.askopenfilename(
-    #         title="Seleccionar base de datos SQLite",
-    #         filetypes=(("Archivos SQLite", "*.sqlite;*.db"), ("Todos los archivos", "*.*")))
-
-    #     if not db_path or not db_path.endswith((".sqlite", ".db")):
-    #         messagebox.showerror("Error", "Por favor selecciona un archivo SQLite válido.")
-    #         return
-
-        
-    #     try:
-    #         conn = sqlite3.connect(db_path)
-    #         cursor = conn.cursor()
-    #         #fecha = '24/10/2024'
-    #         # Obtener la excursion seleccionada desde el Combobox
-    #         excursion_seleccionada = self.combobox_excursion.get()
-    #         # Obtener el ID de la excursion desde el diccionario self.excursiones
-    #         IdEXCURSION = self.excursiones.get(excursion_seleccionada)
-            
-    #         cursor.execute("SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, "
-    #                     "fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes, "
-    #                     "empresa_contratada, datos_infraestructura, hospitales, otros_datos "
-    #                     "FROM excursion WHERE IdEXCURSION = ?", (IdEXCURSION,))    #(fecha,))
-    #         excursion = cursor.fetchone()
-            
-    #         print(excursion)
-
-    #         if not excursion:
-    #             messagebox.showerror("Error", "No se encontraron datos en la tabla principal.")
-    #             return
-
-    #         # Cargar datos en los Entry
-    #         entries = [
-    #             self.lugar_entry, self.fecha_entry, self.proyecto_entry,
-    #             self.fechasalida_entry, self.horasalida_entry,
-    #             self.fecharegreso_entry, self.horaregreso_entry,
-    #             self.lugarestadia_entry, self.datosacompañantes_entry,
-    #             self.empresacontratada_entry, self.datosinfraestructura_entry,
-    #             self.hospitales_entry, self.otrosdatos_entry
-    #         ]
-
-    #         for i, value in enumerate(excursion):
-    #             entries[i].delete(0, tk.END)
-    #             entries[i].insert(0, value if value is not None else "")
-
-    #         # Limpiar Treeview
-    #         for item in self.tree.get_children():
-    #             self.tree.delete(item)
-
-    #         # Consulta para Treeview
-    #         cursor.execute(
-    #             """SELECT
-    #                             alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
-    #                             alumnos.DNI AS DNI,
-    #                             "x" AS Alumno,
-    #                             "" AS Docente,
-    #                             "" AS NoDocente
-    #                         FROM
-    #                             alumnos
-    #                         INNER JOIN
-    #                             excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
-    #                         WHERE
-    #                             excursion.IdEXCURSION = ?
-
-    #                         UNION ALL
-
-    #                         SELECT
-    #                             acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
-    #                             acompanantes.DNI AS DNI,
-    #                             "" AS Alumno,
-    #                             IFNULL(acompanantes.DOCENTE, "") AS Docente,
-    #                             IFNULL(acompanantes.NO_DOCENTE, "") AS NoDocente
-    #                         FROM
-    #                             acompanantes
-    #                         INNER JOIN
-    #                             excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
-    #                         WHERE
-    #                             excursion.IdEXCURSION = ?
-    #                     """,
-    #             (IdEXCURSION, IdEXCURSION) #(fecha, fecha)
-    #         )
-    #         registros = cursor.fetchall()
-    #         print(registros)
-    #         for registro in registros:
-    #             registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
-    #             self.tree.insert("", "end", values=registro_desplazado)
-
-    #         messagebox.showinfo("Éxito", "Registros cargados correctamente.")
-    #     except Exception as e:
-    #         messagebox.showerror("Error", f"Error al cargar los datos desde {db_path}: {e}")
-    #     finally:
-    #         if conn:
-    #             conn.close()
+    
 
     def cargar_desde_sqlite(self, event=None):
         # Verificar si hay una excursión seleccionada
@@ -1030,6 +870,7 @@ class FormularioCarga(tk.Frame):
                     Apellido_Nombre ASC
             """, (IdEXCURSION, IdEXCURSION))
             registros = cursor.fetchall()
+            print(registros)
 
             for registro in registros:
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
@@ -1067,7 +908,7 @@ class FormularioCarga(tk.Frame):
         registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
 
         # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-        estudiantes = sorted([r for r in registros if r[3] == "x"], key=lambda x: x[1])
+        estudiantes = sorted([r for r in registros if r[3] == "X"], key=lambda x: x[1])
         docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
         no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
         

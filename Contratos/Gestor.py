@@ -1,7 +1,7 @@
 from tkinter import messagebox
 from Servicio import *
 from Mensaje import Mensaje
-from crearPDF import crea_pdf
+from pruebas.crearPDF import crea_pdf
 
 
 class Gestor:
