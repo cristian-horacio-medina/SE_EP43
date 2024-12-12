@@ -57,9 +57,8 @@ class FormularioCarga(tk.Frame):
 
     def crear_componentes_tabulador1(self, tabulador):
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
-        tk.Label(tabulador, text="Lugar:").grid(
-            row=1, column=0, sticky='w', padx=5, pady=5)
-        self.lugar_entry = tk.Entry(tabulador, width=90)
+        tk.Label(tabulador, text="Lugar:").grid(row=1, column=0, sticky='w', padx=5, pady=5)
+        self.lugar_entry = tk.Entry(tabulador, width=33)
         self.lugar_entry.grid(row=1, column=1, columnspan=3, sticky='w', padx=5, pady=5)
         
         tk.Label(tabulador, text="Grado:").grid(row=0, column=0, sticky='w', padx=5, pady=5)
@@ -140,9 +139,9 @@ class FormularioCarga(tk.Frame):
             tabulador, text="Agregar", command=self.agregar)
         self.agregar_btn.grid(row=6, column=0, sticky='ew')
 
-        self.boton_ordenar = tk.Button(
-            tabulador, text="Ordenar", command=self.ordenar_treeview)
-        self.boton_ordenar.grid(row=6, column=1, sticky='ew')
+        # self.boton_ordenar = tk.Button(
+        #     tabulador, text="Ordenar", command=self.ordenar_treeview)
+        # self.boton_ordenar.grid(row=6, column=1, sticky='ew')
 
         # Botón para mostrar o actualizar
         self.mostrar_button = tk.Button(
@@ -206,6 +205,9 @@ class FormularioCarga(tk.Frame):
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
         tree_scroll.grid(row=8, column=4, sticky='ns')
 
+    def limitar_texto(self, texto):
+        return len(texto) <= 33
+    
     def cargar_grados(self):
         try:
             db_path = os.path.join(os.path.expanduser(
@@ -439,35 +441,35 @@ class FormularioCarga(tk.Frame):
         self.combobox_rol.set("")
         self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
 
-    def ordenar_treeview(self):
-        # Obtener todos los registros del Treeview
-        registros = [self.tree.item(child)["values"]
-                                    for child in self.tree.get_children()]
+    # def ordenar_treeview(self):
+    #     # Obtener todos los registros del Treeview
+    #     registros = [self.tree.item(child)["values"]
+    #                                 for child in self.tree.get_children()]
 
-        # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-        estudiantes = sorted(
-            [r for r in registros if r[3] == "x"], key=lambda x: x[1])
-        # Docentes tienen algo en la columna 4
-        docentes = sorted([r for r in registros if r[4]
-                          != ""], key=lambda x: x[1])
-        # No Docentes tienen algo en la columna 5
-        no_docentes = sorted(
-            [r for r in registros if r[5] != ""], key=lambda x: x[1])
+    #     # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
+    #     estudiantes = sorted(
+    #         [r for r in registros if r[3] == "x"], key=lambda x: x[1])
+    #     # Docentes tienen algo en la columna 4
+    #     docentes = sorted([r for r in registros if r[4]
+    #                       != ""], key=lambda x: x[1])
+    #     # No Docentes tienen algo en la columna 5
+    #     no_docentes = sorted(
+    #         [r for r in registros if r[5] != ""], key=lambda x: x[1])
 
-        # Concatenar los tres grupos en el orden solicitado
-        registros_ordenados = estudiantes + docentes + no_docentes
+    #     # Concatenar los tres grupos en el orden solicitado
+    #     registros_ordenados = estudiantes + docentes + no_docentes
 
-        # Enumerar secuencialmente
-        for i, registro in enumerate(registros_ordenados, start=1):
-            registro[0] = i
+    #     # Enumerar secuencialmente
+    #     for i, registro in enumerate(registros_ordenados, start=1):
+    #         registro[0] = i
 
-        # Limpiar el Treeview existente
-        for child in self.tree.get_children():
-            self.tree.delete(child)
+    #     # Limpiar el Treeview existente
+    #     for child in self.tree.get_children():
+    #         self.tree.delete(child)
 
-        # Insertar los registros ordenados en el Treeview
-        for registro in registros_ordenados:
-            self.tree.insert("", "end", values=registro)
+    #     # Insertar los registros ordenados en el Treeview
+    #     for registro in registros_ordenados:
+    #         self.tree.insert("", "end", values=registro)
 
     def limpiar(self):
         self.apellido_entry.delete(0, tk.END)
@@ -557,7 +559,7 @@ class FormularioCarga(tk.Frame):
 
                 # Reordenar y guardar cambios
                 self.ordenar_treeview()
-                self.guardar_json()
+                self.guardar_sqlite() #self.guardar_json()
         else:
             messagebox.showwarning(
                 "Advertencia", "No se ha seleccionado ningún elemento.")
@@ -787,7 +789,7 @@ class FormularioCarga(tk.Frame):
             # Consulta para Treeview
             cursor.execute("""
                 SELECT 
-                    alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+                    alumnos.apellido || ', ' || alumnos.nombre AS Apellido_Nombre,
                     alumnos.DNI AS DNI, 
                     "X" AS Alumno, 
                     "" AS Docente, 
@@ -802,7 +804,7 @@ class FormularioCarga(tk.Frame):
                 UNION ALL
                 
                 SELECT 
-                    acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre, 
+                    acompanantes.apellido || ', ' || acompanantes.nombre AS Apellido_Nombre, 
                     acompanantes.DNI AS DNI, 
                     "" AS Alumno, 
                     CASE WHEN acompanantes.DOCENTE IS NOT NULL THEN acompanantes.DOCENTE ELSE '' END AS Docente,
@@ -871,6 +873,8 @@ class FormularioCarga(tk.Frame):
     #     self.generar_pdfs_en_memoria(registros_ordenados)
 
     def generar_pdf_Anexo_V(self):
+        fecha = self.fecha_entry.get()
+        
         db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
 
         # Conexión a la base de datos
@@ -880,7 +884,7 @@ class FormularioCarga(tk.Frame):
 
         # La consulta SQL que proporcionaste
         consulta = """
-        SELECT
+        SELECT DISTINCT
             alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
             alumnos.DNI AS DNI,
             'X' AS Alumno,
@@ -891,11 +895,11 @@ class FormularioCarga(tk.Frame):
         INNER JOIN
             excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
         WHERE
-            excursion.fecha = '24/10/2024'
+            excursion.fecha = ?
 
         UNION ALL
 
-        SELECT
+        SELECT DISTINCT
             acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
             acompanantes.DNI AS DNI,
             '' AS Alumno,
@@ -906,11 +910,14 @@ class FormularioCarga(tk.Frame):
         INNER JOIN
             excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
         WHERE
-            excursion.fecha = '24/10/2024'
+            excursion.fecha = ?
+        ORDER BY 
+                    Alumno DESC, 
+                    Apellido_Nombre ASC    
         """
 
         # Ejecuta la consulta
-        cursor.execute(consulta)
+        cursor.execute(consulta, (fecha, fecha))
 
         # Recupera todos los resultados de la consulta
         registros = []
@@ -964,7 +971,7 @@ class FormularioCarga(tk.Frame):
             y -= 26
             c.drawString(160, y, Distrito)
             y -= 28
-            c.drawString(207, y, self.lugar_entry.get())
+            c.drawString(200, y, self.lugar_entry.get())
             y -= 1
             c.drawString(453.6, y, self.fecha_entry.get())
             y -= 80
