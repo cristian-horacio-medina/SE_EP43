@@ -844,31 +844,107 @@ class FormularioCarga(tk.Frame):
         base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
         return os.path.join(base_path, relative_path)
     
+    # def generar_pdf_Anexo_V(self):
+        
+    #     # Configurar rutas y crear carpetas de PDFs y backups si no existen
+    #     documentos_path = os.path.join(os.environ['USERPROFILE'], 'Documents')
+    #     pdf_path = os.path.join(documentos_path, 'Anexos_PDFs')
+    #     backup_path = os.path.join(documentos_path, 'backup_salidas_escolares')
+    #     os.makedirs(pdf_path, exist_ok=True)
+    #     os.makedirs(backup_path, exist_ok=True)
+        
+    #     registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
+
+    #     # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
+    #     estudiantes = sorted([r for r in registros if r[3] == "X"], key=lambda x: x[1])
+    #     docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
+    #     no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
+        
+    #     # Concatenar los tres grupos en el orden solicitado
+    #     registros_ordenados = estudiantes + docentes + no_docentes
+    #     print(registros_ordenados)
+    #     # Enumerar secuencialmente
+    #     for i, registro in enumerate(registros_ordenados, start=1):
+    #         registro[0] = i
+
+    #     # Generar múltiples PDFs en memoria y combinar
+    #     self.generar_pdfs_en_memoria(registros_ordenados)
+
     def generar_pdf_Anexo_V(self):
-        
-        # Configurar rutas y crear carpetas de PDFs y backups si no existen
-        documentos_path = os.path.join(os.environ['USERPROFILE'], 'Documents')
-        pdf_path = os.path.join(documentos_path, 'Anexos_PDFs')
-        backup_path = os.path.join(documentos_path, 'backup_salidas_escolares')
-        os.makedirs(pdf_path, exist_ok=True)
-        os.makedirs(backup_path, exist_ok=True)
-        
-        registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
+        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+
+        # Conexión a la base de datos
+        conexion = sqlite3.connect(db_path)
+        conexion.row_factory = sqlite3.Row
+        cursor = conexion.cursor()
+
+        # La consulta SQL que proporcionaste
+        consulta = """
+        SELECT
+            alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+            alumnos.DNI AS DNI,
+            'X' AS Alumno,
+            '' AS Docente,
+            '' AS NoDocente
+        FROM
+            alumnos
+        INNER JOIN
+            excursion ON alumnos.IdEXCURSION = excursion.IdEXCURSION
+        WHERE
+            excursion.fecha = '24/10/2024'
+
+        UNION ALL
+
+        SELECT
+            acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
+            acompanantes.DNI AS DNI,
+            '' AS Alumno,
+            IFNULL(acompanantes.DOCENTE, '') AS Docente,
+            IFNULL(acompanantes.NO_DOCENTE, '') AS NoDocente
+        FROM
+            acompanantes
+        INNER JOIN
+            excursion ON acompanantes.IdEXCURSION = excursion.IdEXCURSION
+        WHERE
+            excursion.fecha = '24/10/2024'
+        """
+
+        # Ejecuta la consulta
+        cursor.execute(consulta)
+
+        # Recupera todos los resultados de la consulta
+        registros = []
+        for row in cursor.fetchall():
+            registro = {
+                'Apellido_Nombre': row['Apellido_Nombre'],
+                'DNI': row['DNI'],
+                'Alumno': row['Alumno'],
+                'Docente': row['Docente'],
+                'NoDocente': row['NoDocente']
+            }
+            registros.append(registro)
 
         # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-        estudiantes = sorted([r for r in registros if r[3] == "X"], key=lambda x: x[1])
-        docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
-        no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
-        
+        estudiantes = sorted([r for r in registros if r['Alumno'] == "X"], key=lambda x: x['Apellido_Nombre'])
+        docentes = sorted([r for r in registros if r['Docente'] != ""], key=lambda x: x['Apellido_Nombre'])
+        no_docentes = sorted([r for r in registros if r['NoDocente'] != ""], key=lambda x: x['Apellido_Nombre'])
+
         # Concatenar los tres grupos en el orden solicitado
         registros_ordenados = estudiantes + docentes + no_docentes
-
+        print(registros_ordenados)
+        
         # Enumerar secuencialmente
         for i, registro in enumerate(registros_ordenados, start=1):
-            registro[0] = i
+            registro['Numero'] = i
 
         # Generar múltiples PDFs en memoria y combinar
         self.generar_pdfs_en_memoria(registros_ordenados)
+
+        # Cierra la conexión
+        cursor.close()
+        conexion.close()
+
+
 
     def crear_pdf_memoria(self, registros, imagen_fondo, mostrar_encabezado, posicion_inicial):
         buffer = BytesIO()
@@ -898,12 +974,12 @@ class FormularioCarga(tk.Frame):
 
         for i, registro in enumerate(registros):
             # Dibujar registros en la página
-            c.drawString(90, y, str(registro[0]))
-            c.drawString(115, y, str(registro[1]))
-            c.drawString(265, y, str(registro[2]))
-            c.drawString(350, y, "x" if registro[3] == "x" else "")
-            c.drawString(390, y, str(registro[4]))
-            c.drawString(440, y, str(registro[5]))
+            c.drawString(90, y, str(registro['Numero']))
+            c.drawString(115, y, str(registro['Apellido_Nombre']))
+            c.drawString(265, y, str(registro['DNI']))
+            c.drawString(350, y, "x" if registro['Alumno'] == "x" else "")
+            c.drawString(390, y, str(registro['Docente']))
+            c.drawString(440, y, str(registro['NoDocente']))
             y -= 23
 
             # Si se alcanza el límite de 18 registros por página, crear nueva página
