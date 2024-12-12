@@ -984,7 +984,7 @@ class FormularioCarga(tk.Frame):
             c.drawString(90, y, str(registro['Numero']))
             c.drawString(115, y, str(registro['Apellido_Nombre']))
             c.drawString(265, y, str(registro['DNI']))
-            c.drawString(350, y, "x" if registro['Alumno'] == "x" else "")
+            c.drawString(350, y, "X" if registro['Alumno'] == "X" else "")
             c.drawString(390, y, str(registro['Docente']))
             c.drawString(440, y, str(registro['NoDocente']))
             y -= 23
