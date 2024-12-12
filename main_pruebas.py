@@ -558,7 +558,7 @@ class FormularioCarga(tk.Frame):
                 self.accion_actual = "mostrar"
 
                 # Reordenar y guardar cambios
-                self.ordenar_treeview()
+                #self.ordenar_treeview()
                 self.guardar_sqlite() #self.guardar_json()
         else:
             messagebox.showwarning(

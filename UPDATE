@@ -1,0 +1,3 @@
+UPDATE alumnos
+SET Apellido_Nombre = "Gonzalez, Aracelli"
+WHERE IdALUMNO= 10
