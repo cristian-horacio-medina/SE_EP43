@@ -181,7 +181,7 @@ class FormularioCarga(tk.Frame):
 
         # Listado (Treeview)
         self.tree = ttk.Treeview(tabulador, columns=(
-            "Nº", "Apellido y Nombre", "Documento", "Estudiante", "Docente", "No Docente"), show='headings')
+           "Nº", "Apellido y Nombre", "Documento", "Estudiante", "Docente", "No Docente"), show='headings')
         self.tree.heading("Nº", text="Nº")
         self.tree.heading("Apellido y Nombre", text="Apellido y Nombre")
         self.tree.heading("Documento", text="Documento")
@@ -486,7 +486,8 @@ class FormularioCarga(tk.Frame):
                 "Advertencia", "Seleccione un registro para borrar.")
 
     def mostrar_o_actualizar(self):
-        item_id = self.tree.focus()  # Obtener el ID del elemento seleccionado
+        item_id = self.tree.selection()    #self.tree.focus()  # Obtener el ID del elemento seleccionado
+        print(item_id)
         if item_id:
             if self.accion_actual == "mostrar":
                 # Obtener los valores del Treeview
@@ -564,7 +565,40 @@ class FormularioCarga(tk.Frame):
             messagebox.showwarning(
                 "Advertencia", "No se ha seleccionado ningún elemento.")
 
+    def actualizar_sqlite(self):
+         # Conectar a la base de datos SQLite
+        db_path = os.path.join(os.path.expanduser(
+            "~"), "Documents", "Excursion.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        try:
+            
+            cursor.excute(
+        """
+            UPDATE excursion SET
+                lugar = :lugar,
+                fecha = :fecha,
+                nombre_proyecto = :nombre_proyecto,
+                fecha_salida = :fecha_salida,
+                hora_salida = :hora_salida,
+                fecha_regreso = :fecha_regreso,
+                hora_regreso = :hora_regreso,
+                lugar_estadia = :lugar_estadia,
+                datos_acompañantes = :acompanantes,
+                empresa_contratada = :empresa_contratada,
+                datos_infraestructura = :datos_infraestructura,
+                hospitales = :hospitales,
+                otros_datos = :otros_datos
+            WHERE IdEXCURSION = :id_excursion
+        """
+            )
+        finally:
+            conn.commit()
+            conn.close()
+                    
    
+       
     def guardar_sqlite(self):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
@@ -691,7 +725,9 @@ class FormularioCarga(tk.Frame):
             # Confirmar los cambios
             conn.commit()
             messagebox.showinfo("Éxito", "Datos guardados correctamente en la base de datos.")
-
+            #desbloquear combo grado
+            self.combobox_grado.config(state="normal")
+            self.combobox_grado.set("")
         except Exception as e:
               conn.rollback()  # Revertir cambios en caso de error
               messagebox.showerror("Error", f"No se pudo guardar en la base de datos: {e}")
@@ -704,6 +740,9 @@ class FormularioCarga(tk.Frame):
 
 
     def reiniciar_formulario(self):
+        #desbloquear combo grado
+        self.combobox_grado.config(state="normal")
+        
         # Limpiar las entradas
         self.lugar_entry.delete(0, tk.END)
         self.fecha_entry.delete(0, tk.END)
@@ -711,9 +750,9 @@ class FormularioCarga(tk.Frame):
             self.tree.delete(item)  # Limpiar el Treeview si es necesario
      
     def guardar_y_reiniciar(self):
-        self.guardar_json()
+        self.guardar_sqlite()
         self.reiniciar_formulario()
-        self.lugar_entry.focus()  # Ubica el cursor en el campo Lugar
+        self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
             
     
 
@@ -820,7 +859,7 @@ class FormularioCarga(tk.Frame):
                     Apellido_Nombre ASC
             """, (IdEXCURSION, IdEXCURSION))
             registros = cursor.fetchall()
-            print(registros)
+            #print(registros)
 
             for registro in registros:
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
@@ -938,7 +977,7 @@ class FormularioCarga(tk.Frame):
 
         # Concatenar los tres grupos en el orden solicitado
         registros_ordenados = estudiantes + docentes + no_docentes
-        print(registros_ordenados)
+        #print(registros_ordenados)
         
         # Enumerar secuencialmente
         for i, registro in enumerate(registros_ordenados, start=1):
