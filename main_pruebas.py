@@ -419,7 +419,7 @@ class FormularioCarga(tk.Frame):
         # Verifica que los campos requeridos estén completos
         if apellido and nombre and documento:
             apellido_nombre = f"{apellido}, {nombre}"
-            estudiante = "x" if rol == "Estudiante" else ""
+            estudiante = "X" if rol == "Estudiante" else ""
             docente = rol_seleccionado if rol == "Docente" else ""
             no_docente = rol_seleccionado if rol == "No Docente" else ""
 
@@ -538,7 +538,7 @@ class FormularioCarga(tk.Frame):
                 # Determinar el valor correspondiente según el rol
                 nuevo_docente = self.combobox_docente.get() if nuevo_rol == "Docente" else ""
                 nuevo_no_docente = self.combobox_no_docente.get() if nuevo_rol == "No Docente" else ""
-                nuevo_estudiante = "x" if nuevo_rol == "Estudiante" else ""
+                nuevo_estudiante = "X" if nuevo_rol == "Estudiante" else ""
 
                 # Actualizar el registro en el Treeview
                 self.tree.item(item_id, values=(
@@ -702,12 +702,12 @@ class FormularioCarga(tk.Frame):
                 docente = str(registro[4]).strip() if registro[4] else ""  # Columna "responsable" o ""
                 no_docente = str(registro[5]).strip() if registro[5] else ""  # Columna "responsable" o ""
 
-                if es_estudiante == "x":
+                if es_estudiante == "X":
                     # Insertar en la tabla alumnos
                     cursor.execute("""
                         INSERT INTO alumnos (apellido,nombre, DNI, ALUMNO, IdEXCURSION)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, 'Estudiante', IdEXCURSION))
+                    """, (apellido, nombre, dni, 'X', IdEXCURSION))
 
                 if docente and not no_docente:  # Si es solo docente
                     cursor.execute("""
@@ -775,6 +775,10 @@ class FormularioCarga(tk.Frame):
             # Obtener el ID de la excursión seleccionada desde el diccionario
             IdEXCURSION = self.excursiones.get(excursion_seleccionada)
 
+            print(f"Excursión seleccionada: {excursion_seleccionada}")
+            print(f"ID de la excursión: {IdEXCURSION}")
+
+            
             # Obtener los datos de la excursión seleccionada
             cursor.execute("""
                 SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
@@ -860,8 +864,10 @@ class FormularioCarga(tk.Frame):
             """, (IdEXCURSION, IdEXCURSION))
             registros = cursor.fetchall()
             #print(registros)
+            print(f"Registros obtenidos: {registros}")
 
             for registro in registros:
+                print(f"Registro a insertar: {registro}")
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
                 self.tree.insert("", "end", values=registro_desplazado)
 
@@ -874,7 +880,7 @@ class FormularioCarga(tk.Frame):
 
         # Asociar el evento Enter al Combobox para cargar los datos
         self.combobox_excursion.bind("<Return>", self.cargar_desde_sqlite)
-
+       
 
 
             
