@@ -1,5 +1,5 @@
 import tkinter as tk
-#import json
+import json
 import os
 import locale
 import sys
@@ -21,6 +21,7 @@ class FormularioCarga(tk.Frame):
     def __init__(self, master):
         super().__init__(master)  # Llama al constructor de tk.Frame
         self.master = master
+        self.IdEXCURSION = None
         self.accion_actual = "mostrar"
         # self.rol_seleccionado = tk.StringVar()
         master.title("Formulario de Carga")
@@ -419,7 +420,7 @@ class FormularioCarga(tk.Frame):
         # Verifica que los campos requeridos estén completos
         if apellido and nombre and documento:
             apellido_nombre = f"{apellido}, {nombre}"
-            estudiante = "X" if rol == "Estudiante" else ""
+            estudiante = "x" if rol == "Estudiante" else ""
             docente = rol_seleccionado if rol == "Docente" else ""
             no_docente = rol_seleccionado if rol == "No Docente" else ""
 
@@ -538,7 +539,7 @@ class FormularioCarga(tk.Frame):
                 # Determinar el valor correspondiente según el rol
                 nuevo_docente = self.combobox_docente.get() if nuevo_rol == "Docente" else ""
                 nuevo_no_docente = self.combobox_no_docente.get() if nuevo_rol == "No Docente" else ""
-                nuevo_estudiante = "X" if nuevo_rol == "Estudiante" else ""
+                nuevo_estudiante = "x" if nuevo_rol == "Estudiante" else ""
 
                 # Actualizar el registro en el Treeview
                 self.tree.item(item_id, values=(
@@ -635,7 +636,7 @@ class FormularioCarga(tk.Frame):
         cursor = conn.cursor()
 
         try:
-          # Crear las tablas si no existen
+            # Crear las tablas si no existen
             cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
                                     IdEXCURSION INTEGER PRIMARY KEY AUTOINCREMENT,
                                     lugar TEXT,
@@ -650,39 +651,62 @@ class FormularioCarga(tk.Frame):
                                     empresa_contratada TEXT,
                                     datos_infraestructura TEXT,
                                     hospitales TEXT,
-                                    otros_datos TEXT)''')
+                                    otros_datos TEXT,
+                                    idgrado INTEGER,
+                                    FOREIGN KEY(idgrado) REFERENCES grado(IdGRADO))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
                                     IdALUMNO INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
+                                    apellido TEXT,
                                     nombre TEXT,
-                                    grado TEXT,
-                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
+                                    DNI TEXT,
+                                    ALUMNO TEXT,
+                                    IdGRADO INTEGER,
+                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(IdEXCURSION),
+                                    FOREIGN KEY(IdGRADO) REFERENCES grado(IdGRADO))''')
 
-            cursor.execute('''CREATE TABLE IF NOT EXISTS acompañantes (
+            cursor.execute('''CREATE TABLE IF NOT EXISTS acompanantes (
                                     IdACOMPAÑANTES INTEGER PRIMARY KEY AUTOINCREMENT,
                                     IdEXCURSION INTEGER,
+                                    apellido TEXT,
                                     nombre TEXT,
-                                    tipo TEXT,  -- Puede ser 'Docente' o 'No Docente'
-                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
+                                    DNI TEXT,
+                                    DOCENTE TEXT,
+                                    NO_DOCENTE TEXT,
+                                    IdGRADO INTEGER,
+                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(IdEXCURSION),
+                                    FOREIGN KEY(IdGRADO) REFERENCES grado(IdGRADO))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS grado (
                                     IdGRADO INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    IdEXCURSION INTEGER,
-                                    grado TEXT,
-                                    FOREIGN KEY(IdEXCURSION) REFERENCES excursion(id))''')
+                                    grado TEXT)''')
 
+            if self.IdEXCURSION:
+                # Actualizar los datos en la tabla excursion
+                cursor.execute('''UPDATE excursion SET lugar = ?, fecha = ?, nombre_proyecto = ?, fecha_salida = ?, hora_salida = ?,
+                                    fecha_regreso = ?, hora_regreso = ?, lugar_estadia = ?, datos_acompañantes = ?, empresa_contratada = ?,
+                                    datos_infraestructura = ?, hospitales = ?, otros_datos = ?, idgrado = ?
+                                    WHERE IdEXCURSION = ?''',
+                                    (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                                    hora_regreso, lugar_estadia, datos_acompañantes, empresa_contratada,
+                                    datos_infraestructura, hospitales, otros_datos, idgrado, self.IdEXCURSION))
+                
+                # Borrar registros anteriores de alumnos y acompañantes
+                cursor.execute("DELETE FROM alumnos WHERE IdEXCURSION = ?", (self.IdEXCURSION,))
+                cursor.execute("DELETE FROM acompanantes WHERE IdEXCURSION = ?", (self.IdEXCURSION,))
+            else:
                 # Insertar los datos en la tabla excursion
-            cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
-                                fecha_regreso, hora_regreso, lugar_estadia, empresa_contratada,
-                                datos_infraestructura, hospitales, otros_datos, idgrado)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                                (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
-                                hora_regreso, lugar_estadia, empresa_contratada,
-                                datos_infraestructura, hospitales, otros_datos, idgrado))
+                cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
+                                    fecha_regreso, hora_regreso, lugar_estadia, datos_acompañantes, empresa_contratada,
+                                    datos_infraestructura, hospitales, otros_datos, idgrado)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                    (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                                    hora_regreso, lugar_estadia, datos_acompañantes, empresa_contratada,
+                                    datos_infraestructura, hospitales, otros_datos, idgrado))
 
                 # Obtener el ID de la excursión recién insertada
-            IdEXCURSION = cursor.lastrowid
+                self.IdEXCURSION = cursor.lastrowid
             
             # Insertar los registros de alumnos y acompañantes
             for registro in registros:
@@ -702,26 +726,26 @@ class FormularioCarga(tk.Frame):
                 docente = str(registro[4]).strip() if registro[4] else ""  # Columna "responsable" o ""
                 no_docente = str(registro[5]).strip() if registro[5] else ""  # Columna "responsable" o ""
 
-                if es_estudiante == "X":
+                if es_estudiante == "x":
                     # Insertar en la tabla alumnos
                     cursor.execute("""
-                        INSERT INTO alumnos (apellido,nombre, DNI, ALUMNO, IdEXCURSION)
-                        VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, 'X', IdEXCURSION))
+                        INSERT INTO alumnos (apellido, nombre, dni, alumno, IdEXCURSION, IdGRADO)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (apellido, nombre, dni, 'x', self.IdEXCURSION, idgrado))
 
-                if docente and not no_docente:  # Si es solo docente
+                if docente:  # Si es docente
                     cursor.execute("""
-                        INSERT INTO acompanantes (apellido, nombre, DNI, DOCENTE, IdEXCURSION)
+                        INSERT INTO acompanantes (apellido, nombre, dni, docente, IdEXCURSION)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, docente, IdEXCURSION))
+                    """, (apellido, nombre, dni, docente, self.IdEXCURSION))
 
-                if no_docente and not docente:  # Si es solo no docente
+                if no_docente:  # Si es no docente
                     cursor.execute("""
-                        INSERT INTO acompanantes (apellido, nombre, DNI, NO_DOCENTE, IdEXCURSION)
+                        INSERT INTO acompanantes (apellido, nombre, dni, no_docente, IdEXCURSION)
                         VALUES (?, ?, ?, ?, ?)
-                    """, (apellido, nombre, dni, no_docente, IdEXCURSION))
+                    """, (apellido, nombre, dni, no_docente, self.IdEXCURSION))
           
-                        
+            print(self.IdEXCURSION)            
             # Confirmar los cambios
             conn.commit()
             messagebox.showinfo("Éxito", "Datos guardados correctamente en la base de datos.")
@@ -736,49 +760,43 @@ class FormularioCarga(tk.Frame):
                # Cerrar la conexión
                conn.close()
 
-
-
-
     def reiniciar_formulario(self):
-        #desbloquear combo grado
-        self.combobox_grado.config(state="normal")
-        
-        # Limpiar las entradas
-        self.lugar_entry.delete(0, tk.END)
-        self.fecha_entry.delete(0, tk.END)
-        for item in self.tree.get_children():
-            self.tree.delete(item)  # Limpiar el Treeview si es necesario
-     
-    def guardar_y_reiniciar(self):
-        self.guardar_sqlite()
-        self.reiniciar_formulario()
-        self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
+            #desbloquear combo grado
+            self.combobox_grado.config(state="normal")
             
-    
+            # Limpiar las entradas
+            self.lugar_entry.delete(0, tk.END)
+            self.fecha_entry.delete(0, tk.END)
+            for item in self.tree.get_children():
+                self.tree.delete(item)  # Limpiar el Treeview si es necesario
+        
+    def guardar_y_reiniciar(self):
+            self.guardar_sqlite()
+            self.reiniciar_formulario()
+            self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
+                
+        
 
     def cargar_desde_sqlite(self, event=None):
         # Verificar si hay una excursión seleccionada
         excursion_seleccionada = self.combobox_excursion.get()
+        
         if not excursion_seleccionada:
             messagebox.showwarning("Advertencia", "Por favor, selecciona una excursión.")
             return
 
+        # Guardar el ID de la excursión en la instancia
+        self.IdEXCURSION = self.excursiones.get(excursion_seleccionada)  # Ahora sí se guarda bien
+        print(f"IdEXCURSION cargado: {self.IdEXCURSION}")  # Debug
+
         # Ruta fija de la base de datos
-        db_path = os.path.join(os.path.expanduser(
-            "~"), "Documents", "Excursion.db")
+        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
 
         try:
             # Conexión a la base de datos
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
 
-            # Obtener el ID de la excursión seleccionada desde el diccionario
-            IdEXCURSION = self.excursiones.get(excursion_seleccionada)
-
-            print(f"Excursión seleccionada: {excursion_seleccionada}")
-            print(f"ID de la excursión: {IdEXCURSION}")
-
-            
             # Obtener los datos de la excursión seleccionada
             cursor.execute("""
                 SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
@@ -786,7 +804,7 @@ class FormularioCarga(tk.Frame):
                     empresa_contratada, datos_infraestructura, hospitales, otros_datos, IdGRADO
                 FROM excursion
                 WHERE IdEXCURSION = ?
-            """, (IdEXCURSION,))
+            """, (self.IdEXCURSION,))
             excursion = cursor.fetchone()
 
             if not excursion:
@@ -809,6 +827,7 @@ class FormularioCarga(tk.Frame):
 
             # Obtener la descripción del grado usando IdGRADO
             IdGRADO = excursion[-1]  # El último valor en la tupla es 'IdGRADO'
+            print(f"IdGRADO obtenido: {IdGRADO}")
             cursor.execute("""
                 SELECT grado || seccion || turno 
                 FROM grado 
@@ -861,13 +880,10 @@ class FormularioCarga(tk.Frame):
                 ORDER BY 
                     Alumno DESC, 
                     Apellido_Nombre ASC
-            """, (IdEXCURSION, IdEXCURSION))
+            """, (self.IdEXCURSION, self.IdEXCURSION))
             registros = cursor.fetchall()
-            #print(registros)
-            print(f"Registros obtenidos: {registros}")
 
             for registro in registros:
-                print(f"Registro a insertar: {registro}")
                 registro_desplazado = ("",) + registro  # Agregar un valor vacío al inicio de cada registro
                 self.tree.insert("", "end", values=registro_desplazado)
 
@@ -878,14 +894,7 @@ class FormularioCarga(tk.Frame):
             if conn:
                 conn.close()
 
-        # Asociar el evento Enter al Combobox para cargar los datos
-        self.combobox_excursion.bind("<Return>", self.cargar_desde_sqlite)
-       
-
-
-            
-            
-    
+        
     def get_resource_path(self, relative_path):
         # Resuelve la ruta de los recursos en modo empaquetado o en desarrollo
         base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
@@ -1278,5 +1287,3 @@ root = tk.Tk()
 root.geometry("930x600")
 app = FormularioCarga(root)
 root.mainloop()
-
-
