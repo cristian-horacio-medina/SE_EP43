@@ -64,6 +64,7 @@ class FormularioCarga(tk.Frame):
         self.lugar_entry = tk.Entry(tabulador, width=33)
         self.lugar_entry.grid(row=1, column=1, columnspan=3,
                               sticky='w', padx=5, pady=5)
+        self.lugar_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.lugar_entry, 33, tabulador))
 
         tk.Label(tabulador, text="Grado:").grid(
             row=0, column=0, sticky='w', padx=5, pady=5)
@@ -446,36 +447,7 @@ class FormularioCarga(tk.Frame):
         self.combobox_rol.set("")
         self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
 
-    # def ordenar_treeview(self):
-    #     # Obtener todos los registros del Treeview
-    #     registros = [self.tree.item(child)["values"]
-    #                                 for child in self.tree.get_children()]
-
-    #     # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-    #     estudiantes = sorted(
-    #         [r for r in registros if r[3] == "x"], key=lambda x: x[1])
-    #     # Docentes tienen algo en la columna 4
-    #     docentes = sorted([r for r in registros if r[4]
-    #                       != ""], key=lambda x: x[1])
-    #     # No Docentes tienen algo en la columna 5
-    #     no_docentes = sorted(
-    #         [r for r in registros if r[5] != ""], key=lambda x: x[1])
-
-    #     # Concatenar los tres grupos en el orden solicitado
-    #     registros_ordenados = estudiantes + docentes + no_docentes
-
-    #     # Enumerar secuencialmente
-    #     for i, registro in enumerate(registros_ordenados, start=1):
-    #         registro[0] = i
-
-    #     # Limpiar el Treeview existente
-    #     for child in self.tree.get_children():
-    #         self.tree.delete(child)
-
-    #     # Insertar los registros ordenados en el Treeview
-    #     for registro in registros_ordenados:
-    #         self.tree.insert("", "end", values=registro)
-
+    
     def limpiar(self):
         self.apellido_entry.delete(0, tk.END)
         self.nombre_entry.delete(0, tk.END)
@@ -483,17 +455,37 @@ class FormularioCarga(tk.Frame):
         self.rol_seleccionado.set("Estudiante")
 
     def borrar(self):
+        """
+        Deletes the selected item from the Treeview and the database.
+        """
         selected_item = self.tree.selection()
         if selected_item:
+            item = self.tree.item(selected_item)
+            values = item['values']
+            documento = values[2]
+
+            # Delete from Treeview
             self.tree.delete(selected_item)
+
+            # Delete from database
+            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            try:
+                cursor.execute("DELETE FROM alumnos WHERE DNI = ?", (documento,))
+                cursor.execute("DELETE FROM acompanantes WHERE DNI = ?", (documento,))
+                conn.commit()
+                messagebox.showinfo("Éxito", "Registro borrado correctamente.")
+            except Exception as e:
+                conn.rollback()
+                messagebox.showerror("Error", f"No se pudo borrar el registro: {e}")
+            finally:
+                conn.close()
         else:
-            messagebox.showwarning(
-                "Advertencia", "Seleccione un registro para borrar.")
+            messagebox.showwarning("Advertencia", "Seleccione un registro para borrar.")
 
     def mostrar_o_actualizar(self):
-        # self.tree.focus()  # Obtener el ID del elemento seleccionado
         item_id = self.tree.selection()
-        print(item_id)
         if item_id:
             if self.accion_actual == "mostrar":
                 # Obtener los valores del Treeview
@@ -564,49 +556,16 @@ class FormularioCarga(tk.Frame):
                     text="Modificar", bg="white", fg="black", font=("Arial", 10, "bold"))
                 self.accion_actual = "mostrar"
 
-                # Reordenar y guardar cambios
-                # self.ordenar_treeview()
-                self.guardar_sqlite()  # self.guardar_json()
+                # Guardar cambios
+                self.guardar_sqlite()
         else:
             messagebox.showwarning(
                 "Advertencia", "No se ha seleccionado ningún elemento.")
 
-    def actualizar_sqlite(self):
-        # Conectar a la base de datos SQLite
-        db_path = os.path.join(os.path.expanduser(
-            "~"), "Documents", "Excursion.db")
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        try:
-
-            cursor.excute(
-                """
-            UPDATE excursion SET
-                lugar = :lugar,
-                fecha = :fecha,
-                nombre_proyecto = :nombre_proyecto,
-                fecha_salida = :fecha_salida,
-                hora_salida = :hora_salida,
-                fecha_regreso = :fecha_regreso,
-                hora_regreso = :hora_regreso,
-                lugar_estadia = :lugar_estadia,
-                datos_acompanantes = :acompanantes,
-                empresa_contratada = :empresa_contratada,
-                datos_infraestructura = :datos_infraestructura,
-                hospitales = :hospitales,
-                otros_datos = :otros_datos
-            WHERE IdEXCURSION = :id_excursion
-        """
-            )
-        finally:
-            conn.commit()
-            conn.close()
-
     def guardar_sqlite(self):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
-                 for child in self.tree.get_children()]
+                     for child in self.tree.get_children()]
         print("Contenido de registros:", registros)
 
         # Obtener valores de los campos de entrada (TextBox)
@@ -642,7 +601,7 @@ class FormularioCarga(tk.Frame):
                                 fecha_regreso TEXT,
                                 hora_regreso TEXT,
                                 lugar_estadia TEXT,
-                                acompanantes TEXT,
+                                datos_acompanantes TEXT,
                                 empresa_contratada TEXT,
                                 datos_infraestructura TEXT,
                                 hospitales TEXT,
@@ -683,7 +642,7 @@ class FormularioCarga(tk.Frame):
                                     fecha_regreso = ?, hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
                                     datos_infraestructura = ?, hospitales = ?, otros_datos = ?, idgrado = ?
                                     WHERE IdEXCURSION = ?''',
-                            (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                               (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO, self.IdEXCURSION))
             else:
@@ -692,7 +651,7 @@ class FormularioCarga(tk.Frame):
                                     fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                     datos_infraestructura, hospitales, otros_datos, idgrado)
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                            (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                               (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO))
 
