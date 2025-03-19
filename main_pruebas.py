@@ -62,10 +62,18 @@ class FormularioCarga(tk.Frame):
         tk.Label(tabulador, text="Lugar:").grid(
             row=1, column=0, sticky='w', padx=5, pady=5)
         self.lugar_entry = tk.Entry(tabulador, width=33)
-        self.lugar_entry.grid(row=1, column=1, columnspan=3,
-                              sticky='w', padx=5, pady=5)
+        self.lugar_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
         self.lugar_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.lugar_entry, 33, tabulador))
 
+        # Agregar una etiqueta y un campo de entrada para 'Localidad'
+        tk.Label(tabulador, text="Localidad:").grid(
+            row=1, column=2, sticky='w', padx=(5, 0), pady=5)
+        self.localidad_entry = tk.Entry(tabulador, width=23)
+        self.localidad_entry.grid(row=1, column=2, sticky='e', padx=(0, 5), pady=5)
+        self.localidad_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.localidad_entry, 33, tabulador))
+
+        
+        
         tk.Label(tabulador, text="Grado:").grid(
             row=0, column=0, sticky='w', padx=5, pady=5)
         self.combobox_grado = ttk.Combobox(
@@ -570,6 +578,7 @@ class FormularioCarga(tk.Frame):
 
         # Obtener valores de los campos de entrada (TextBox)
         lugar = self.lugar_entry.get()
+        localidad = self.localidad_entry.get()
         fecha = self.fecha_entry.get()
         nombre_proyecto = self.proyecto_entry.get()
         fecha_salida = self.fechasalida_entry.get()
@@ -594,6 +603,7 @@ class FormularioCarga(tk.Frame):
             cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
                                 IdEXCURSION INTEGER PRIMARY KEY AUTOINCREMENT,
                                 lugar TEXT,
+                                localidadad TEXT,
                                 fecha TEXT,
                                 nombre_proyecto TEXT,
                                 fecha_salida TEXT,
@@ -638,20 +648,20 @@ class FormularioCarga(tk.Frame):
 
             if self.IdEXCURSION:
                 # Actualizar los datos en la tabla excursion
-                cursor.execute('''UPDATE excursion SET lugar = ?, fecha = ?, nombre_proyecto = ?, fecha_salida = ?, hora_salida = ?,
+                cursor.execute('''UPDATE excursion SET lugar = ?, localidad = ?, fecha = ?, nombre_proyecto = ?, fecha_salida = ?, hora_salida = ?,
                                     fecha_regreso = ?, hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
                                     datos_infraestructura = ?, hospitales = ?, otros_datos = ?, idgrado = ?
                                     WHERE IdEXCURSION = ?''',
-                               (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                               (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO, self.IdEXCURSION))
             else:
                 # Insertar los datos en la tabla excursion
-                cursor.execute('''INSERT INTO excursion (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
+                cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
                                     fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                     datos_infraestructura, hospitales, otros_datos, idgrado)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                               (lugar, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                               (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO))
 
@@ -712,7 +722,7 @@ class FormularioCarga(tk.Frame):
             self.tree.delete(item)  # Limpiar el Treeview si es necesario
 
     def guardar_y_reiniciar(self):
-        self.guardar_sqlite()
+        #self.guardar_sqlite()
         self.reiniciar_formulario()
         self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
 
@@ -741,7 +751,7 @@ class FormularioCarga(tk.Frame):
 
             # Obtener los datos de la excursión seleccionada
             cursor.execute("""
-                SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
+                SELECT lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
                     fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes,
                     empresa_contratada, datos_infraestructura, hospitales, otros_datos, IdGRADO
                 FROM excursion
@@ -756,7 +766,7 @@ class FormularioCarga(tk.Frame):
 
             # Cargar datos en los Entry
             entries = [
-                self.lugar_entry, self.fecha_entry, self.proyecto_entry,
+                self.lugar_entry,  self.localidad_entry,  self.fecha_entry,  self.proyecto_entry,
                 self.fechasalida_entry, self.horasalida_entry,
                 self.fecharegreso_entry, self.horaregreso_entry,
                 self.lugarestadia_entry, self.datosacompañantes_entry,
@@ -1088,9 +1098,43 @@ class FormularioCarga(tk.Frame):
         # Obtener el día, mes y día de la semana en formato texto
         dia_semana = fecha.strftime("%A")  # Día de la semana completo
         dia = fecha.day  # Día del mes
-        mes = fecha.strftime("%B")  # Mes en letras
+        mes = fecha.strftime("%B").capitalize()  # Mes en letras
 
-        return dia_semana, dia, mes
+        # Diccionarios para reemplazar los nombres en inglés por español
+        dias_semana = {
+            "Monday": "Lunes",
+            "Tuesday": "Martes",
+            "Wednesday": "Miércoles",
+            "Thursday": "Jueves",
+            "Friday": "Viernes",
+            "Saturday": "Sábado",
+            "Sunday": "Domingo"
+        }
+
+        meses = {
+            "January": "Enero",
+            "February": "Febrero",
+            "March": "Marzo",
+            "April": "Abril",
+            "May": "Mayo",
+            "June": "Junio",
+            "July": "Julio",
+            "August": "Agosto",
+            "September": "Septiembre",
+            "October": "Octubre",
+            "November": "Noviembre",
+            "December": "Diciembre"
+        }
+
+        # Reemplazar los nombres en inglés por español
+        dia_semana = dias_semana.get(dia_semana, dia_semana)
+        mes = meses.get(mes, mes)
+        
+        # Formatear la fecha completa
+        fecha_formateada = f"{dia} de {mes} de {fecha.year}"
+        #messagebox.showinfo("Información", f"Fecha: {fecha_formateada}\nDía de la semana: {dia_semana}")
+
+        return dia, mes, fecha_formateada
 
     def get_resource_path(self, relative_path):
         # Resuelve la ruta de los recursos en modo empaquetado o en desarrollo
@@ -1128,7 +1172,7 @@ class FormularioCarga(tk.Frame):
         # fondo_hoja_3 = self.get_resource_path("resources/Anexo VI_003.png") --> no lo necesito
 
         # Obtener la fecha desglosada del TextBox del formulario
-        dia_semana, dia, mes = self.obtener_mes_letras(self.fecha_entry.get())
+        dia, mes, fecha_formateada = self.obtener_mes_letras(self.fecha_entry.get())
 
         # Datos del alumno desde el registro del TreeView
         nombre = registro[1]
@@ -1183,14 +1227,14 @@ class FormularioCarga(tk.Frame):
         c.drawString(255.15, 591, proyecto)
         c.drawString(85, 540, establecimiento)
         c.drawString(120, 540, numero_establecimiento)
-        c.drawString(144, 540, f",{dia_semana} ")
-        c.drawString(180, 540, f"{dia},")
-        c.drawString(200, 540, hora_salida + " hs.")
+        c.drawString(144, 540, f",{fecha_formateada}, ")
+        #c.drawString(180, 540, f"{dia},")
+        c.drawString(280, 540, hora_salida + " hs.")
         c.drawString(227, 514, establecimiento)
         c.drawString(260, 514, numero_establecimiento)
-        c.drawString(280, 514, f",{dia_semana} ")
-        c.drawString(320, 514, f"{dia},")
-        c.drawString(340, 514, hora_regreso + " hs.")
+        c.drawString(280, 514, f",{fecha_formateada}, ")
+        #c.drawString(320, 514, f"{dia},")
+        c.drawString(390, 514, hora_regreso + " hs.")
         c.drawString(294, 491, lugar_estadia)
         c.drawString(294, 466, datos_acompanantes)
         c.drawString(406, 440, primera_linea_empresa_contratada)

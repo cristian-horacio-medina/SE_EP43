@@ -1,7 +1,0 @@
-06/03/25
-
-1-Revisar guardado, arrastra registros sde excursión anterior (alumnos, docentes, proyecto, fecha)
-2-Ver e ltema de los acentos miércoles lo toma mal.
-3-Refrescar lista de excursiones (las del desplegable) cuando se realiza el guardado.
-4-Guardar desde una sola pestaña (la primera) y al salir o generar una nueva excursión.
-5-Ver de limpiar los campos cuando se realiza el guardado (porque quedan registros en memoria)
