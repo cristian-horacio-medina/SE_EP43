@@ -774,7 +774,7 @@ class FormularioCarga(tk.Frame):
 
             # Obtener el ID de la excursión seleccionada desde el diccionario
             IdEXCURSION = self.excursiones.get(excursion_seleccionada)
-
+            print(IdEXCURSION)
             # Obtener los datos de la excursión seleccionada
             cursor.execute("""
                 SELECT lugar, fecha, nombre_proyecto, fecha_salida, hora_salida,
