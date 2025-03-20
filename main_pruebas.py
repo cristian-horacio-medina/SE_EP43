@@ -493,6 +493,7 @@ class FormularioCarga(tk.Frame):
             messagebox.showwarning("Advertencia", "Seleccione un registro para borrar.")
 
     def mostrar_o_actualizar(self):
+        self.combobox_grado.config(state="normal")
         item_id = self.tree.selection()
         if item_id:
             if self.accion_actual == "mostrar":
@@ -537,6 +538,7 @@ class FormularioCarga(tk.Frame):
                 nuevo_nombre = self.nombre_entry.get()
                 nuevo_documento = self.documento_entry.get()
                 nuevo_rol = self.rol_seleccionado.get()
+                nuevo_grado = self.combobox_grado.get()
 
                 # Concatenar Apellido y Nombre
                 nuevo_apellido_nombre = f"{nuevo_apellido}, {nuevo_nombre}"
@@ -555,6 +557,10 @@ class FormularioCarga(tk.Frame):
                     nuevo_docente,
                     nuevo_no_docente,
                 ))
+
+                # Actualizar el grado si es necesario
+                if nuevo_grado:
+                    self.IdGRADO = self.grados.get(nuevo_grado)
 
                 # Limpiar los Entry y Combobox
                 self.limpiar()
@@ -702,8 +708,8 @@ class FormularioCarga(tk.Frame):
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
-            self.combobox_grado.config(state="normal")
-            self.combobox_grado.set("")
+            self.combobox_grado.config(state="disabled")
+            #self.combobox_grado.set("")
         except Exception as e:
             conn.rollback()
             messagebox.showerror(
@@ -1153,8 +1159,11 @@ class FormularioCarga(tk.Frame):
         pdf_buffers = []
         registros = [self.tree.item(child)["values"]
                      for child in self.tree.get_children()]
-
-        for registro in registros:
+        
+        # Filtrar solo los estudiantes
+        registros_estudiantes = [registro for registro in registros if registro[3] == "X"]
+        
+        for registro in registros_estudiantes:
             buffer = self.crear_pdf_por_alumno_en_memoria(registro)
             pdf_buffers.append(buffer)
 
@@ -1218,7 +1227,7 @@ class FormularioCarga(tk.Frame):
         c.drawString(453.6, 105, f"{dia}")
         c.drawString(140, 86, f"{mes}")
         # Datos del alumno
-        c.drawString(360, 204, nombre)
+        c.drawString(340, 202, nombre)
         c.drawString(283.46, 182, str(dni))
 
         # Datos generales de la excursión
@@ -1229,12 +1238,12 @@ class FormularioCarga(tk.Frame):
         c.drawString(120, 540, numero_establecimiento)
         c.drawString(144, 540, f",{fecha_formateada}, ")
         #c.drawString(180, 540, f"{dia},")
-        c.drawString(280, 540, hora_salida + " hs.")
+        c.drawString(290, 540, hora_salida + " hs.")
         c.drawString(227, 514, establecimiento)
         c.drawString(260, 514, numero_establecimiento)
         c.drawString(280, 514, f",{fecha_formateada}, ")
         #c.drawString(320, 514, f"{dia},")
-        c.drawString(390, 514, hora_regreso + " hs.")
+        c.drawString(420, 514, hora_regreso + " hs.")
         c.drawString(294, 491, lugar_estadia)
         c.drawString(294, 466, datos_acompanantes)
         c.drawString(406, 440, primera_linea_empresa_contratada)
