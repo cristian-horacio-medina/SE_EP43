@@ -1004,7 +1004,7 @@ class FormularioCarga(tk.Frame):
             # Dibujar registros en la página
             c.drawString(90, y, str(registro['Numero']))
             c.drawString(115, y, str(registro['Apellido_Nombre']))
-            c.drawString(265, y, str(registro['DNI']))
+            c.drawString(285, y, str(registro['DNI']))
             c.drawString(350, y, "X" if registro['Alumno'] == "X" else "")
             c.drawString(390, y, str(registro['Docente']))
             c.drawString(440, y, str(registro['NoDocente']))
@@ -1059,7 +1059,7 @@ class FormularioCarga(tk.Frame):
         archivo_salida = os.path.join(
             os.environ["USERPROFILE"], "Documents", "Anexos_PDFs", "Anexo_V.pdf")
         self.combinar_pdfs_memoria(buffers, archivo_salida)
-        # messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
+        messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
 
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
         escritor_pdf = PdfFileWriter()
