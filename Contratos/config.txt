@@ -1,0 +1,99 @@
+Paara preservar la cadena de conexión se puede hacer lo siguiente:
+
+1) Colocarlas como variables de entorno en Windows (ojo van sin comillas, los valores).
+
+De forma permanente (para que estén disponibles siempre):
+
+Abre el Panel de Control, y ve a:
+Sistema > Configuración avanzada del sistema > Variables de entorno.
+Agrega las variables de entorno con sus respectivos valores, como DB_SERVER, DB_NAME, DB_USER, y DB_PASSWORD.
+Esto hará que las variables estén disponibles para todos los programas y sesiones de usuario. 
+
+2) Linux
+
+De forma permanente (para que se carguen siempre):
+
+Abre el archivo de configuración de tu terminal, como .bashrc o .zshrc (dependiendo del shell que utilices), usando un editor de texto:
+bash
+Copiar código
+nano ~/.bashrc  # o ~/.zshrc si usas Zsh
+Agrega las líneas:
+bash
+Copiar código
+export DB_SERVER='localhost'
+export DB_NAME='Gestion'
+export DB_USER='sa'
+export DB_PASSWORD='$sql3'
+Guarda el archivo y ejecuta:
+bash
+Copiar código
+source ~/.bashrc  # O ~/.zshrc, según corresponda
+Ahora, las variables de entorno estarán disponibles cada vez que abras una nueva terminal.
+
+-----------------------------------------
+
+Cómo acceder a estas variables desde Python:
+Una vez configuradas las variables de entorno, puedes acceder a ellas en tu script Python con el siguiente código:
+
+python
+Copiar código
+import os
+import pyodbc
+
+server = os.getenv('DB_SERVER')
+bd = os.getenv('DB_NAME')
+usuario = os.getenv('DB_USER')
+contrasena = os.getenv('DB_PASSWORD')
+
+try:
+    conexion = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};'
+                              'SERVER=' + server + ';'
+                              'DATABASE=' + bd + ';'
+                              'UID=' + usuario + ';'
+                              'PWD=' + contrasena)
+    print("Conexión exitosa")
+except pyodbc.Error as e:
+    print("Error al intentar conectar a la BD:", e)
+
+    -----------------------------
+
+    Para crear PDF desde un HTML (es lo más óptimo y fácil) instalar:
+
+    pip install wkhtmltopdf
+    pip install Jinja2
+    pip install pdfkit
+
+    Desde una consola con Bash
+
+    ----------------------------------
+
+    Variables de Entorno con Python (.env) | python-dotenv | python-decouple
+
+    ----------------------------------
+
+    Que materias dá un docente?..consulta:
+
+    Use gestion
+declare @ciclo as int , @cuat as int
+set @ciclo = 2024
+set @cuat = 2
+
+select distinct
+com.Combo2 as Comisión,car.Combo as Carrera  ,mat.combo,dia.NombreDia,doc.Combo as Docente
+from AL_ALUMNOS_MATERIAS al
+inner join al_comisiones_mate comat on al.Comision_ID=comat.Comision_ID and al.Materia_ID=comat.Materia_ID --and EstadoMateria_ID in (1,2,3,4,5,9)
+inner join al_comisiones com on al.Comision_ID=com.Comision_ID
+inner join AL_PLANES_EST_CARRE car on al.Carrera_ID=car.Carrera_ID and al.PlanEstudio_ID=car.PlanEstudio_ID
+inner join AL_MATERIAS mat on al.materia_ID=mat.Materia_ID
+inner join AL_CICLOS_LECTIVOS ciclo on al.CicloLectivo_ID=ciclo.CicloLectivo_ID
+inner join AL_COMISIONES_MATE_HORARIOS comath on comat.ComisionMate_ID = comath.ComisionMate_ID
+inner join TG_DIAS dia on dia.Dia_ID=comath.Dia_ID
+inner join AL_DOCENTES doc on doc.Docente_ID=comat.Docente_ID
+where ciclo.Descripcion = @ciclo and al.Modulo_ID = @cuat
+and comat.Docente_ID  = 5165 --99999999
+and com.Activo = 'S'
+
+order by dia.NombreDia --doc.Combo,2,1,3 ;
+
+
+Select * from al_docentes where Apellido LIKE '%millo%';
