@@ -6,8 +6,9 @@ from Empleado import *
 class Servicio:
 
 	def conectar():
-		miConexion = sqlite3.connect(r"C:\Users\estudiante\Python\Excursion.db")
-		miCursor = miConexion.cursor()
+		miConexion = sqlite3.connect(r"c:\Users\Papá\Python\Excursion.db")
+		miConexion.text_factory = str  # Asegura que los textos se manejen correctamente por el tema acentos		
+  		miCursor = miConexion.cursor()
 		return miConexion, miCursor
 
 	def conexionBBDD():
