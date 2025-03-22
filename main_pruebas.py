@@ -127,7 +127,7 @@ class FormularioCarga(tk.Frame):
         tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado,
                        value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
         tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado,
-                       value="No Docente", command=self.mostrar_combobox).grid(row=4, column=2)
+                       value="No Docente").grid(row=4, column=2) #, command=self.mostrar_combobox)
 
         # Crear el Combobox para "Responsable" o "Reemplazante"
         self.combobox_docente = ttk.Combobox(
@@ -135,11 +135,11 @@ class FormularioCarga(tk.Frame):
         self.combobox_docente.grid(row=5, column=1, sticky="w", padx=5, pady=5)
         self.combobox_docente.config(state="disabled")
 
-        self.combobox_no_docente = ttk.Combobox(
-            tabulador, values=["Responsable", "Reemplazante"])
-        self.combobox_no_docente.grid(
-            row=5, column=2, sticky="w", padx=5, pady=5)
-        self.combobox_no_docente.config(state="disabled")
+        # self.combobox_no_docente = ttk.Combobox(
+        #     tabulador, values=["Responsable", "Reemplazante"])
+        # self.combobox_no_docente.grid(
+        #     row=5, column=2, sticky="w", padx=5, pady=5)
+        # self.combobox_no_docente.config(state="disabled")
 
         # Botón para nueva excursión
         self.agregar_btn = tk.Button(
@@ -152,9 +152,7 @@ class FormularioCarga(tk.Frame):
             tabulador, text="Agregar", command=self.agregar)
         self.agregar_btn.grid(row=6, column=0, sticky='ew')
 
-        # self.boton_ordenar = tk.Button(
-        #     tabulador, text="Ordenar", command=self.ordenar_treeview)
-        # self.boton_ordenar.grid(row=6, column=1, sticky='ew')
+        
 
         # Botón para mostrar o actualizar
         self.mostrar_button = tk.Button(
@@ -269,16 +267,17 @@ class FormularioCarga(tk.Frame):
     def mostrar_combobox(self):
         # Ocultar ambos Combobox
         self.combobox_docente.grid_remove()
-        self.combobox_no_docente.grid_remove()
+        #self.combobox_no_docente.grid_remove()
 
         # Mostrar y activar el Combobox correspondiente
         if self.rol_seleccionado.get() == "Docente":
             self.combobox_docente.grid()
             self.combobox_docente.config(state="normal")
         elif self.rol_seleccionado.get() == "No Docente":
-            self.combobox_no_docente.grid()
-            self.combobox_no_docente.config(state="normal")
-
+            #self.combobox_no_docente.grid()
+            #self.combobox_no_docente.config(state="normal")
+            pass
+            
     def crear_componentes_tabulador2(self, tabulador):
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
         tk.Label(tabulador, text="Nombre del Proyecto:").grid(
@@ -422,11 +421,12 @@ class FormularioCarga(tk.Frame):
                 return
             rol_seleccionado = self.combobox_docente.get()  # Obtener el valor seleccionado
         elif rol == "No Docente":
-            if not self.combobox_no_docente.get():  # Si no se seleccionó un valor en el combobox
-                messagebox.showwarning(
-                    "Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para No Docente.")
-                return
-            rol_seleccionado = self.combobox_no_docente.get()  # Obtener el valor seleccionado
+            pass
+            # if not self.combobox_no_docente.get():  # Si no se seleccionó un valor en el combobox
+            #     messagebox.showwarning(
+            #         "Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para No Docente.")
+            #     return
+            # rol_seleccionado = self.combobox_no_docente.get()  # Obtener el valor seleccionado
         else:
             rol_seleccionado = rol  # Para Estudiante, usamos directamente el valor del Radiobutton
 
@@ -435,7 +435,7 @@ class FormularioCarga(tk.Frame):
             apellido_nombre = f"{apellido}, {nombre}"
             estudiante = "X" if rol == "Estudiante" else ""
             docente = rol_seleccionado if rol == "Docente" else ""
-            no_docente = rol_seleccionado if rol == "No Docente" else ""
+            no_docente = "X"  if rol == "No Docente" else ""  #rol_seleccionado
 
             # Inserta los datos en el Treeview
             self.tree.insert("", "end", values=(
@@ -493,6 +493,7 @@ class FormularioCarga(tk.Frame):
             messagebox.showwarning("Advertencia", "Seleccione un registro para borrar.")
 
     def mostrar_o_actualizar(self):
+        self.combobox_grado.config(state="normal")
         item_id = self.tree.selection()
         if item_id:
             if self.accion_actual == "mostrar":
@@ -523,7 +524,7 @@ class FormularioCarga(tk.Frame):
                     self.combobox_docente.set(docente)
                 elif no_docente:
                     self.rol_seleccionado.set("No Docente")
-                    self.combobox_no_docente.set(no_docente)
+                    #self.combobox_no_docente.set(no_docente)
                 else:
                     self.rol_seleccionado.set("Estudiante")
 
@@ -537,13 +538,14 @@ class FormularioCarga(tk.Frame):
                 nuevo_nombre = self.nombre_entry.get()
                 nuevo_documento = self.documento_entry.get()
                 nuevo_rol = self.rol_seleccionado.get()
+                nuevo_grado = self.combobox_grado.get()
 
                 # Concatenar Apellido y Nombre
                 nuevo_apellido_nombre = f"{nuevo_apellido}, {nuevo_nombre}"
 
                 # Determinar el valor correspondiente según el rol
                 nuevo_docente = self.combobox_docente.get() if nuevo_rol == "Docente" else ""
-                nuevo_no_docente = self.combobox_no_docente.get() if nuevo_rol == "No Docente" else ""
+                nuevo_no_docente = "X" if nuevo_rol == "No Docente" else "" #self.combobox_no_docente.get()
                 nuevo_estudiante = "X" if nuevo_rol == "Estudiante" else ""
 
                 # Actualizar el registro en el Treeview
@@ -555,6 +557,10 @@ class FormularioCarga(tk.Frame):
                     nuevo_docente,
                     nuevo_no_docente,
                 ))
+
+                # Actualizar el grado si es necesario
+                if nuevo_grado:
+                    self.IdGRADO = self.grados.get(nuevo_grado)
 
                 # Limpiar los Entry y Combobox
                 self.limpiar()
@@ -702,8 +708,8 @@ class FormularioCarga(tk.Frame):
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
-            self.combobox_grado.config(state="normal")
-            self.combobox_grado.set("")
+            self.combobox_grado.config(state="disabled")
+            #self.combobox_grado.set("")
         except Exception as e:
             conn.rollback()
             messagebox.showerror(
@@ -998,10 +1004,10 @@ class FormularioCarga(tk.Frame):
             # Dibujar registros en la página
             c.drawString(90, y, str(registro['Numero']))
             c.drawString(115, y, str(registro['Apellido_Nombre']))
-            c.drawString(265, y, str(registro['DNI']))
+            c.drawString(285, y, str(registro['DNI']))
             c.drawString(350, y, "X" if registro['Alumno'] == "X" else "")
             c.drawString(390, y, str(registro['Docente']))
-            c.drawString(440, y, str(registro['NoDocente']))
+            c.drawString(460, y, str(registro['NoDocente']))
             y -= 23
 
             # Si se alcanza el límite de 18 registros por página, crear nueva página
@@ -1053,7 +1059,7 @@ class FormularioCarga(tk.Frame):
         archivo_salida = os.path.join(
             os.environ["USERPROFILE"], "Documents", "Anexos_PDFs", "Anexo_V.pdf")
         self.combinar_pdfs_memoria(buffers, archivo_salida)
-        # messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
+        messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
 
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
         escritor_pdf = PdfFileWriter()
@@ -1153,8 +1159,11 @@ class FormularioCarga(tk.Frame):
         pdf_buffers = []
         registros = [self.tree.item(child)["values"]
                      for child in self.tree.get_children()]
-
-        for registro in registros:
+        
+        # Filtrar solo los estudiantes
+        registros_estudiantes = [registro for registro in registros if registro[3] == "X"]
+        
+        for registro in registros_estudiantes:
             buffer = self.crear_pdf_por_alumno_en_memoria(registro)
             pdf_buffers.append(buffer)
 
@@ -1218,7 +1227,7 @@ class FormularioCarga(tk.Frame):
         c.drawString(453.6, 105, f"{dia}")
         c.drawString(140, 86, f"{mes}")
         # Datos del alumno
-        c.drawString(360, 204, nombre)
+        c.drawString(340, 202, nombre)
         c.drawString(283.46, 182, str(dni))
 
         # Datos generales de la excursión
@@ -1229,12 +1238,12 @@ class FormularioCarga(tk.Frame):
         c.drawString(120, 540, numero_establecimiento)
         c.drawString(144, 540, f",{fecha_formateada}, ")
         #c.drawString(180, 540, f"{dia},")
-        c.drawString(280, 540, hora_salida + " hs.")
+        c.drawString(290, 540, hora_salida + " hs.")
         c.drawString(227, 514, establecimiento)
         c.drawString(260, 514, numero_establecimiento)
         c.drawString(280, 514, f",{fecha_formateada}, ")
         #c.drawString(320, 514, f"{dia},")
-        c.drawString(390, 514, hora_regreso + " hs.")
+        c.drawString(420, 514, hora_regreso + " hs.")
         c.drawString(294, 491, lugar_estadia)
         c.drawString(294, 466, datos_acompanantes)
         c.drawString(406, 440, primera_linea_empresa_contratada)
