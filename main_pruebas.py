@@ -960,11 +960,14 @@ class FormularioCarga(tk.Frame):
 
         # Concatenar los tres grupos en el orden solicitado
         registros_ordenados = estudiantes + docentes + no_docentes
-        # print(registros_ordenados)
 
-        # Enumerar secuencialmente
-        for i, registro in enumerate(registros_ordenados, start=1):
+        # Enumerar secuencialmente solo para estudiantes
+        for i, registro in enumerate(estudiantes, start=1):
             registro['Numero'] = i
+
+        # No enumerar secuencialmente para docentes y no docentes
+        for registro in docentes + no_docentes:
+            registro['Numero'] = ""
 
         # Generar múltiples PDFs en memoria y combinar
         self.generar_pdfs_en_memoria(registros_ordenados)
