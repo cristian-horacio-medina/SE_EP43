@@ -864,32 +864,7 @@ class FormularioCarga(tk.Frame):
             os.path.abspath(__file__)))
         return os.path.join(base_path, relative_path)
 
-    # def generar_pdf_Anexo_V(self):
-
-    #     # Configurar rutas y crear carpetas de PDFs y backups si no existen
-    #     documentos_path = os.path.join(os.environ['USERPROFILE'], 'Documents')
-    #     pdf_path = os.path.join(documentos_path, 'Anexos_PDFs')
-    #     backup_path = os.path.join(documentos_path, 'backup_salidas_escolares')
-    #     os.makedirs(pdf_path, exist_ok=True)
-    #     os.makedirs(backup_path, exist_ok=True)
-
-    #     registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
-
-    #     # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
-    #     estudiantes = sorted([r for r in registros if r[3] == "X"], key=lambda x: x[1])
-    #     docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
-    #     no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
-
-    #     # Concatenar los tres grupos en el orden solicitado
-    #     registros_ordenados = estudiantes + docentes + no_docentes
-    #     print(registros_ordenados)
-    #     # Enumerar secuencialmente
-    #     for i, registro in enumerate(registros_ordenados, start=1):
-    #         registro[0] = i
-
-    #     # Generar múltiples PDFs en memoria y combinar
-    #     self.generar_pdfs_en_memoria(registros_ordenados)
-
+    
     def generar_pdf_Anexo_V(self):
         fecha = self.fecha_entry.get()
 
@@ -979,7 +954,6 @@ class FormularioCarga(tk.Frame):
     def crear_pdf_memoria(self, registros, imagen_fondo, mostrar_encabezado, posicion_inicial):
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
-        # c.drawImage(imagen_fondo, 0, 0, width=A4[0], height=A4[1])
         c.drawImage(imagen_fondo, 0, 0,
                     width=A4[0], height=A4[1], preserveAspectRatio=True, anchor='c')
 
@@ -1016,7 +990,6 @@ class FormularioCarga(tk.Frame):
             # Si se alcanza el límite de 18 registros por página, crear nueva página
             if (i + 1) % 18 == 0 and (i + 1) < len(registros):
                 c.showPage()
-                # c.drawImage(imagen_fondo, 0, 0, width=A4[0], height=A4[1])
                 c.drawImage(
                     imagen_fondo, 0, 0, width=A4[0], height=A4[1], preserveAspectRatio=True, anchor='c')
                 y = posicion_inicial
@@ -1036,34 +1009,39 @@ class FormularioCarga(tk.Frame):
         buffers = []
         archivo_num = 1
 
-        while registros_ordenados:
-            if archivo_num % 2 != 0:  # Formulario impar
-                registros_a_incluir = registros_ordenados[:18]
-                imagen_fondo = fondo_impar
-                posicion_inicial = posicion_impar
-                mostrar_encabezado = True
-            else:  # Formulario par
-                registros_a_incluir = registros_ordenados[:9]
-                imagen_fondo = fondo_par
-                posicion_inicial = posicion_par
-                mostrar_encabezado = False
-
-            # Generar el PDF en memoria y añadir el buffer a la lista
+        # Generar formularios de 18 registros mientras haya más de 9 registros
+        while len(registros_ordenados) > 9:
+            registros_a_incluir = registros_ordenados[:18]
             buffer = self.crear_pdf_memoria(
-                registros_a_incluir, imagen_fondo, mostrar_encabezado, posicion_inicial)
+                registros_a_incluir,
+                fondo_impar,
+                mostrar_encabezado=True,
+                posicion_inicial=posicion_impar
+            )
             buffers.append(buffer)
 
-            # Remover los registros que ya se han incluido
-            registros_ordenados = registros_ordenados[len(
-                registros_a_incluir):]
+            # Remover los registros procesados
+            registros_ordenados = registros_ordenados[18:]
             archivo_num += 1
+
+        # Siempre generar el formulario par (9 registros o menos, o vacío)
+        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []  # Puede estar vacío
+        buffer = self.crear_pdf_memoria(
+            registros_a_incluir,
+            fondo_par,
+            mostrar_encabezado=False,
+            posicion_inicial=posicion_par
+        )
+        buffers.append(buffer)
 
         # Combinar los PDFs en memoria y guardar en un único archivo
         archivo_salida = os.path.join(
             os.environ["USERPROFILE"], "Documents", "Anexos_PDFs", "Anexo_V.pdf")
         self.combinar_pdfs_memoria(buffers, archivo_salida)
+
         messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
 
+            
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
         escritor_pdf = PdfFileWriter()
 
