@@ -975,7 +975,7 @@ class FormularioCarga(tk.Frame):
             y -= 80
 
         # Ajustar la fuente para la tabla
-        c.setFont("Helvetica", 8)
+        c.setFont("Helvetica", 7)
 
         for i, registro in enumerate(registros):
             # Dibujar registros en la página
@@ -1041,7 +1041,7 @@ class FormularioCarga(tk.Frame):
 
         messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
 
-            
+        
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
         escritor_pdf = PdfFileWriter()
 
