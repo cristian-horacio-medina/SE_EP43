@@ -11,7 +11,6 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PyPDF4 import PdfFileWriter, PdfFileReader
-from tkcalendar import Calendar
 
 # Establecer la localización a español (España)
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')  # Para sistemas UNIX
@@ -303,28 +302,8 @@ class FormularioCarga(tk.Frame):
         self.fechasalida_entry = tk.Entry(tabulador, width=15)
         self.fechasalida_entry.grid(
             row=1, column=1, sticky='w', padx=125, pady=5)
-
-        # Botón para abrir el calendario
-        self.calendario_btn = tk.Button(
-            tabulador, text="📅", command=lambda: self.abrir_calendario(self.fechasalida_entry))
-        self.calendario_btn.grid(row=1, column=1, sticky='e', padx=5, pady=5)
-
-        def abrir_calendario(self, entry):
-        # Crear una nueva ventana para el calendario
-        top = tk.Toplevel()
-        top.title("Seleccionar Fecha")
-
-        # Crear un calendario usando tkcalendar
-        cal = Calendar(top, selectmode="day", date_pattern="dd/mm/yyyy")
-        cal.pack(pady=10)
-
-        # Botón para seleccionar la fecha
-        def seleccionar_fecha():
-            entry.delete(0, tk.END)
-            entry.insert(0, cal.get_date())
-            top.destroy()
-
-        tk.Button(top, text="Seleccionar", command=seleccionar_fecha).pack(pady=5)
+        self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.fechasalida_entry, 15, tabulador))
 
         tk.Label(tabulador, text="Hora de salida:").grid(
             row=1, column=2, sticky='w', padx=5, pady=2)
