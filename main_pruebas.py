@@ -11,6 +11,7 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PyPDF4 import PdfFileWriter, PdfFileReader
+from tkcalendar import Calendar
 
 # Establecer la localización a español (España)
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')  # Para sistemas UNIX
@@ -86,6 +87,8 @@ class FormularioCarga(tk.Frame):
         self.combobox_excursion.grid(
             row=5, column=3, sticky="e", padx=2, pady=2)
         self.combobox_excursiones()
+        # Asociar el evento de selección al método cargar_desde_sqlite
+        self.combobox_excursion.bind("<<ComboboxSelected>>", self.cargar_desde_sqlite)
 
         # Cargar datos en el Combobox
         self.cargar_grados()
@@ -127,7 +130,8 @@ class FormularioCarga(tk.Frame):
         tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado,
                        value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
         tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado,
-                       value="No Docente").grid(row=4, column=2) #, command=self.mostrar_combobox)
+                       value="No Docente").grid(row=4, column=2) 
+        tk.Label(tabulador, text="Seleccione una excursión").grid(row=4, column=3, sticky='ew', padx=5, pady=5)
 
         # Crear el Combobox para "Responsable" o "Reemplazante"
         self.combobox_docente = ttk.Combobox(
@@ -135,54 +139,55 @@ class FormularioCarga(tk.Frame):
         self.combobox_docente.grid(row=5, column=1, sticky="w", padx=5, pady=5)
         self.combobox_docente.config(state="disabled")
 
-        # self.combobox_no_docente = ttk.Combobox(
-        #     tabulador, values=["Responsable", "Reemplazante"])
-        # self.combobox_no_docente.grid(
-        #     row=5, column=2, sticky="w", padx=5, pady=5)
-        # self.combobox_no_docente.config(state="disabled")
-
         # Botón para nueva excursión
         self.agregar_btn = tk.Button(
             tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
-        self.agregar_btn.grid(row=1, column=3, columnspan=2,
-                              sticky='e', padx=5, pady=5)
+        self.agregar_btn.grid(row=0, column=3, sticky='ew')
+        self.agregar_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
+        
+        #Botón eliminar excursión
+        self.eliminar_excursion_btn = tk.Button(
+            tabulador, text="Eliminar excursión", command=self.eliminar_excursion)
+        self.eliminar_excursion_btn.grid(row=2, column=3, sticky='ew')
+        self.eliminar_excursion_btn.config(bg="red", fg="white", font=("Arial", 10, "bold"))
 
         # Botón para agregar registro
         self.agregar_btn = tk.Button(
-            tabulador, text="Agregar", command=self.agregar)
+            tabulador, text="Agregar", command=self.agregar, bg="green", fg="white", font=("Arial", 10, "bold"))
         self.agregar_btn.grid(row=6, column=0, sticky='ew')
 
         
 
         # Botón para mostrar o actualizar
         self.mostrar_button = tk.Button(
-            tabulador, text="Modificar", command=self.mostrar_o_actualizar)
+            tabulador, text="Modificar seleccionado", command=self.mostrar_o_actualizar, bg="blue", fg="white", font=("Arial", 10, "bold"))
         self.mostrar_button.grid(row=6, column=2, sticky='ew')
 
         # Botones para borrar, guardar, cargar, generar PDF y salir
         self.borrar_btn = tk.Button(
-            tabulador, text="Borrar Seleccionado", command=self.borrar)
-        self.borrar_btn.grid(row=9, column=0, sticky='ew')
+            tabulador, text="Borrar seleccionado", command=self.borrar, borderwidth=2, relief="solid")
+        self.borrar_btn.grid(row=6, column=1, sticky='ew')
+        self.borrar_btn.config(fg="red", font=("Arial", 10, "bold"), highlightbackground="red", highlightthickness=2)
 
         self.guardar_btn = tk.Button(
             tabulador, text="Guardar excursión", command=self.guardar_sqlite)
         self.guardar_btn.grid(row=9, column=1, sticky='ew')
 
-        self.cargar_btn = tk.Button(
-            tabulador, text="Cargar excursión", command=self.cargar_desde_sqlite)
-        self.cargar_btn.grid(row=9, column=2, sticky='ew')
+        # self.cargar_btn = tk.Button(
+        #     tabulador, text="Cargar excursión", command=self.cargar_desde_sqlite)
+        # self.cargar_btn.grid(row=9, column=2, sticky='ew')
 
         self.generar_pdf_btn = tk.Button(
             tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
-        self.generar_pdf_btn.grid(row=9, column=3, sticky='ew')
+        self.generar_pdf_btn.grid(row=9, column=2, sticky='ew')
 
         self.salir_btn = tk.Button(tabulador, text="Salir", command=quit)
-        self.salir_btn.grid(row=10, column=1, columnspan=2, sticky='ew')
+        self.salir_btn.grid(row=10, column=2, columnspan=2, sticky='ew')
 
         # Botón para generar los PDFs individuales
         self.generar_pdfs_btn = tk.Button(
             tabulador, text="Generar Anexo VI", command=self.generar_pdf_Anexo_VI)
-        self.generar_pdfs_btn.grid(row=10, column=3, columnspan=2, sticky='ew')
+        self.generar_pdfs_btn.grid(row=9, column=3, sticky='ew')
 
         tabulador.grid_rowconfigure(6, weight=1)  # Fila del Treeview
         tabulador.grid_columnconfigure(0, weight=1)  # Primera columna
@@ -295,19 +300,39 @@ class FormularioCarga(tk.Frame):
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
         tk.Label(tabulador, text="Fecha de salida:").grid(
             row=1, column=1, sticky='w', padx=5, pady=5)
-        self.fechasalida_entry = tk.Entry(tabulador, width=8)
+        self.fechasalida_entry = tk.Entry(tabulador, width=15)
         self.fechasalida_entry.grid(
             row=1, column=1, sticky='w', padx=125, pady=5)
-        self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.fechasalida_entry, 10, tabulador))
+
+        # Botón para abrir el calendario
+        self.calendario_btn = tk.Button(
+            tabulador, text="📅", command=lambda: self.abrir_calendario(self.fechasalida_entry))
+        self.calendario_btn.grid(row=1, column=1, sticky='e', padx=5, pady=5)
+
+        def abrir_calendario(self, entry):
+        # Crear una nueva ventana para el calendario
+        top = tk.Toplevel()
+        top.title("Seleccionar Fecha")
+
+        # Crear un calendario usando tkcalendar
+        cal = Calendar(top, selectmode="day", date_pattern="dd/mm/yyyy")
+        cal.pack(pady=10)
+
+        # Botón para seleccionar la fecha
+        def seleccionar_fecha():
+            entry.delete(0, tk.END)
+            entry.insert(0, cal.get_date())
+            top.destroy()
+
+        tk.Button(top, text="Seleccionar", command=seleccionar_fecha).pack(pady=5)
 
         tk.Label(tabulador, text="Hora de salida:").grid(
             row=1, column=2, sticky='w', padx=5, pady=2)
-        self.horasalida_entry = tk.Entry(tabulador, width=5)
+        self.horasalida_entry = tk.Entry(tabulador, width=10)
         self.horasalida_entry.grid(
             row=1, column=2, sticky='W', padx=105, pady=2)
         self.horasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.horasalida_entry, 5, tabulador))
+            self.horasalida_entry, 10, tabulador))
 
         # Agregar una etiqueta a Lugar de salida
         tk.Label(tabulador, text="Lugar de regreso: E.P. Nº 43").grid(
@@ -316,19 +341,19 @@ class FormularioCarga(tk.Frame):
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
         tk.Label(tabulador, text="Fecha de regreso:").grid(
             row=2, column=1, sticky='w', padx=5, pady=5)
-        self.fecharegreso_entry = tk.Entry(tabulador, width=8)
+        self.fecharegreso_entry = tk.Entry(tabulador, width=15)
         self.fecharegreso_entry.grid(
             row=2, column=1, sticky='w', padx=125, pady=5)
         self.fecharegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.fecharegreso_entry, 10, tabulador))
+            self.fecharegreso_entry, 15, tabulador))
 
         tk.Label(tabulador, text="Hora de regreso:").grid(
             row=2, column=2, sticky='w', padx=5, pady=2)
-        self.horaregreso_entry = tk.Entry(tabulador, width=5)
+        self.horaregreso_entry = tk.Entry(tabulador, width=10)
         self.horaregreso_entry.grid(
             row=2, column=2, sticky='W', padx=105, pady=2)
         self.horaregreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.horaregreso_entry, 5, tabulador))
+            self.horaregreso_entry, 10, tabulador))
         # Lugares de estadía
         tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
@@ -456,11 +481,6 @@ class FormularioCarga(tk.Frame):
         self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
 
     
-    def limpiar(self):
-        self.apellido_entry.delete(0, tk.END)
-        self.nombre_entry.delete(0, tk.END)
-        self.documento_entry.delete(0, tk.END)
-        self.rol_seleccionado.set("Estudiante")
 
     def borrar(self):
         """
@@ -717,13 +737,72 @@ class FormularioCarga(tk.Frame):
         finally:
             conn.close()
 
+    def eliminar_excursion(self):
+        # Verificar si hay una excursión seleccionada
+        excursion_seleccionada = self.combobox_excursion.get()
+        if not excursion_seleccionada:
+            messagebox.showwarning("Advertencia", "Por favor, selecciona una excursión.")
+            return
+
+        # Obtener el ID de la excursión seleccionada
+        IdEXCURSION = self.excursiones.get(excursion_seleccionada)
+
+        # Confirmar la eliminación
+        confirmacion = messagebox.askyesno(
+            "Confirmación", "¿Estás seguro de que deseas eliminar esta excursión?")
+        if not confirmacion:
+            return
+
+        # Eliminar la excursión de la base de datos
+        try:
+            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM excursion WHERE IdEXCURSION = ?", (IdEXCURSION,))
+            conn.commit()
+            messagebox.showinfo("Éxito", "Excursión eliminada correctamente.")
+        except Exception as e:
+            conn.rollback()
+            messagebox.showerror("Error", f"No se pudo eliminar la excursión: {e}")
+        finally:
+            conn.close()
+
+        # Actualizar la lista de excursiones
+        self.actualizar_lista_excursiones()
+
+        # Limpiar el formulario
+        self.reiniciar_formulario()
+
+    def actualizar_lista_excursiones(self):
+        try:
+            # Recargar las excursiones desde la base de datos
+            self.combobox_excursiones()
+            # Limpiar el Combobox
+            self.combobox_excursion.set("")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo actualizar la lista de excursiones: {e}")
+
     def reiniciar_formulario(self):
-        # desbloquear combo grado
+        # desbloquear combo 
+        self.combobox_grado.delete(0, tk.END)
         self.combobox_grado.config(state="normal")
 
         # Limpiar las entradas
         self.lugar_entry.delete(0, tk.END)
         self.fecha_entry.delete(0, tk.END)
+        self.localidad_entry.delete(0, tk.END)
+        self.proyecto_entry.delete(0, tk.END)
+        self.fechasalida_entry.delete(0, tk.END)    
+        self.fecharegreso_entry.delete(0, tk.END)
+        self.hora_salida_entry.delete(0, tk.END)
+        self.hora_regreso_entry.delete(0, tk.END)
+        self.lugar_estadia_entry.delete(0, tk.END)
+        self.datos_acompanantes_entry.delete(0, tk.END)
+        self.empresa_contratada_entry.delete(0, tk.END)
+        self.datos_infraestructura_entry.delete(0, tk.END)
+        self.hospitales_entry.delete(0, tk.END)
+        self.otros_datos_entry.delete(0, tk.END)
+        
         for item in self.tree.get_children():
             self.tree.delete(item)  # Limpiar el Treeview si es necesario
 
