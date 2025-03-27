@@ -299,7 +299,7 @@ class FormularioCarga(tk.Frame):
         self.fechasalida_entry.grid(
             row=1, column=1, sticky='w', padx=125, pady=5)
         self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.fechasalida_entry, 10, tabulador))
+            self.fechasalida_entry, 15, tabulador))
 
         tk.Label(tabulador, text="Hora de salida:").grid(
             row=1, column=2, sticky='w', padx=5, pady=2)
