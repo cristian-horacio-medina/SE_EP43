@@ -86,8 +86,6 @@ class FormularioCarga(tk.Frame):
         self.combobox_excursion.grid(
             row=5, column=3, sticky="e", padx=2, pady=2)
         self.combobox_excursiones()
-        # Asociar el evento de selección al método cargar_desde_sqlite
-        self.combobox_excursion.bind("<<ComboboxSelected>>", self.cargar_desde_sqlite)
 
         # Cargar datos en el Combobox
         self.cargar_grados()
@@ -129,8 +127,7 @@ class FormularioCarga(tk.Frame):
         tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado,
                        value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
         tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado,
-                       value="No Docente").grid(row=4, column=2) 
-        tk.Label(tabulador, text="Seleccione una excursión").grid(row=4, column=3, sticky='ew', padx=5, pady=5)
+                       value="No Docente").grid(row=4, column=2) #, command=self.mostrar_combobox)
 
         # Crear el Combobox para "Responsable" o "Reemplazante"
         self.combobox_docente = ttk.Combobox(
@@ -138,28 +135,28 @@ class FormularioCarga(tk.Frame):
         self.combobox_docente.grid(row=5, column=1, sticky="w", padx=5, pady=5)
         self.combobox_docente.config(state="disabled")
 
+        # self.combobox_no_docente = ttk.Combobox(
+        #     tabulador, values=["Responsable", "Reemplazante"])
+        # self.combobox_no_docente.grid(
+        #     row=5, column=2, sticky="w", padx=5, pady=5)
+        # self.combobox_no_docente.config(state="disabled")
+
         # Botón para nueva excursión
         self.agregar_btn = tk.Button(
             tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
-        self.agregar_btn.grid(row=0, column=3, sticky='ew')
-        self.agregar_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
-        
-        #Botón eliminar excursión
-        self.eliminar_excursion_btn = tk.Button(
-            tabulador, text="Eliminar excursión", command=self.eliminar_excursion)
-        self.eliminar_excursion_btn.grid(row=2, column=3, sticky='ew')
-        self.eliminar_excursion_btn.config(bg="red", fg="white", font=("Arial", 10, "bold"))
+        self.agregar_btn.grid(row=1, column=3, columnspan=2,
+                              sticky='e', padx=5, pady=5)
 
         # Botón para agregar registro
         self.agregar_btn = tk.Button(
-            tabulador, text="Agregar", command=self.agregar, bg="green", fg="white", font=("Arial", 10, "bold"))
+            tabulador, text="Agregar", command=self.agregar)
         self.agregar_btn.grid(row=6, column=0, sticky='ew')
 
         
 
         # Botón para mostrar o actualizar
         self.mostrar_button = tk.Button(
-            tabulador, text="Modificar seleccionado", command=self.mostrar_o_actualizar, bg="blue", fg="white", font=("Arial", 10, "bold"))
+            tabulador, text="Modificar", command=self.mostrar_o_actualizar)
         self.mostrar_button.grid(row=6, column=2, sticky='ew')
         
         # Botón para modificar grado
@@ -170,29 +167,28 @@ class FormularioCarga(tk.Frame):
 
         # Botones para borrar, guardar, cargar, generar PDF y salir
         self.borrar_btn = tk.Button(
-            tabulador, text="Borrar seleccionado", command=self.borrar, borderwidth=2, relief="solid")
-        self.borrar_btn.grid(row=6, column=1, sticky='ew')
-        self.borrar_btn.config(fg="red", font=("Arial", 10, "bold"), highlightbackground="red", highlightthickness=2)
+            tabulador, text="Borrar Seleccionado", command=self.borrar)
+        self.borrar_btn.grid(row=9, column=0, sticky='ew')
 
         self.guardar_btn = tk.Button(
             tabulador, text="Guardar excursión", command=self.guardar_sqlite)
         self.guardar_btn.grid(row=9, column=1, sticky='ew')
 
-        # self.cargar_btn = tk.Button(
-        #     tabulador, text="Cargar excursión", command=self.cargar_desde_sqlite)
-        # self.cargar_btn.grid(row=9, column=2, sticky='ew')
+        self.cargar_btn = tk.Button(
+            tabulador, text="Cargar excursión", command=self.cargar_desde_sqlite)
+        self.cargar_btn.grid(row=9, column=2, sticky='ew')
 
         self.generar_pdf_btn = tk.Button(
             tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
-        self.generar_pdf_btn.grid(row=9, column=2, sticky='ew')
+        self.generar_pdf_btn.grid(row=9, column=3, sticky='ew')
 
         self.salir_btn = tk.Button(tabulador, text="Salir", command=quit)
-        self.salir_btn.grid(row=10, column=2, columnspan=2, sticky='ew')
+        self.salir_btn.grid(row=10, column=1, columnspan=2, sticky='ew')
 
         # Botón para generar los PDFs individuales
         self.generar_pdfs_btn = tk.Button(
             tabulador, text="Generar Anexo VI", command=self.generar_pdf_Anexo_VI)
-        self.generar_pdfs_btn.grid(row=9, column=3, sticky='ew')
+        self.generar_pdfs_btn.grid(row=10, column=3, columnspan=2, sticky='ew')
 
         tabulador.grid_rowconfigure(6, weight=1)  # Fila del Treeview
         tabulador.grid_columnconfigure(0, weight=1)  # Primera columna
@@ -305,7 +301,7 @@ class FormularioCarga(tk.Frame):
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
         tk.Label(tabulador, text="Fecha de salida:").grid(
             row=1, column=1, sticky='w', padx=5, pady=5)
-        self.fechasalida_entry = tk.Entry(tabulador, width=15)
+        self.fechasalida_entry = tk.Entry(tabulador, width=8)
         self.fechasalida_entry.grid(
             row=1, column=1, sticky='w', padx=125, pady=5)
         self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
@@ -313,11 +309,11 @@ class FormularioCarga(tk.Frame):
 
         tk.Label(tabulador, text="Hora de salida:").grid(
             row=1, column=2, sticky='w', padx=5, pady=2)
-        self.horasalida_entry = tk.Entry(tabulador, width=10)
+        self.horasalida_entry = tk.Entry(tabulador, width=5)
         self.horasalida_entry.grid(
             row=1, column=2, sticky='W', padx=105, pady=2)
         self.horasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.horasalida_entry, 10, tabulador))
+            self.horasalida_entry, 5, tabulador))
 
         # Agregar una etiqueta a Lugar de salida
         tk.Label(tabulador, text="Lugar de regreso: E.P. Nº 43").grid(
@@ -326,19 +322,19 @@ class FormularioCarga(tk.Frame):
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
         tk.Label(tabulador, text="Fecha de regreso:").grid(
             row=2, column=1, sticky='w', padx=5, pady=5)
-        self.fecharegreso_entry = tk.Entry(tabulador, width=15)
+        self.fecharegreso_entry = tk.Entry(tabulador, width=8)
         self.fecharegreso_entry.grid(
             row=2, column=1, sticky='w', padx=125, pady=5)
         self.fecharegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.fecharegreso_entry, 15, tabulador))
+            self.fecharegreso_entry, 10, tabulador))
 
         tk.Label(tabulador, text="Hora de regreso:").grid(
             row=2, column=2, sticky='w', padx=5, pady=2)
-        self.horaregreso_entry = tk.Entry(tabulador, width=10)
+        self.horaregreso_entry = tk.Entry(tabulador, width=5)
         self.horaregreso_entry.grid(
             row=2, column=2, sticky='W', padx=105, pady=2)
         self.horaregreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.horaregreso_entry, 10, tabulador))
+            self.horaregreso_entry, 5, tabulador))
         # Lugares de estadía
         tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
@@ -471,6 +467,11 @@ class FormularioCarga(tk.Frame):
             self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
 
     
+    def limpiar(self):
+        self.apellido_entry.delete(0, tk.END)
+        self.nombre_entry.delete(0, tk.END)
+        self.documento_entry.delete(0, tk.END)
+        self.rol_seleccionado.set("Estudiante")
 
     def borrar(self):
         """
@@ -965,7 +966,32 @@ class FormularioCarga(tk.Frame):
             os.path.abspath(__file__)))
         return os.path.join(base_path, relative_path)
 
-    
+    # def generar_pdf_Anexo_V(self):
+
+    #     # Configurar rutas y crear carpetas de PDFs y backups si no existen
+    #     documentos_path = os.path.join(os.environ['USERPROFILE'], 'Documents')
+    #     pdf_path = os.path.join(documentos_path, 'Anexos_PDFs')
+    #     backup_path = os.path.join(documentos_path, 'backup_salidas_escolares')
+    #     os.makedirs(pdf_path, exist_ok=True)
+    #     os.makedirs(backup_path, exist_ok=True)
+
+    #     registros = [self.tree.item(child)["values"] for child in self.tree.get_children()]
+
+    #     # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
+    #     estudiantes = sorted([r for r in registros if r[3] == "X"], key=lambda x: x[1])
+    #     docentes = sorted([r for r in registros if r[4] != ""], key=lambda x: x[1])  # Docentes tienen algo en la columna 4
+    #     no_docentes = sorted([r for r in registros if r[5] != ""], key=lambda x: x[1])  # No Docentes tienen algo en la columna 5
+
+    #     # Concatenar los tres grupos en el orden solicitado
+    #     registros_ordenados = estudiantes + docentes + no_docentes
+    #     print(registros_ordenados)
+    #     # Enumerar secuencialmente
+    #     for i, registro in enumerate(registros_ordenados, start=1):
+    #         registro[0] = i
+
+    #     # Generar múltiples PDFs en memoria y combinar
+    #     self.generar_pdfs_en_memoria(registros_ordenados)
+
     def generar_pdf_Anexo_V(self):
         fecha = self.fecha_entry.get()
 
@@ -1052,6 +1078,7 @@ class FormularioCarga(tk.Frame):
     def crear_pdf_memoria(self, registros, imagen_fondo, mostrar_encabezado, posicion_inicial):
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
+        # c.drawImage(imagen_fondo, 0, 0, width=A4[0], height=A4[1])
         c.drawImage(imagen_fondo, 0, 0,
                     width=A4[0], height=A4[1], preserveAspectRatio=True, anchor='c')
 
@@ -1073,7 +1100,7 @@ class FormularioCarga(tk.Frame):
             y -= 80
 
         # Ajustar la fuente para la tabla
-        c.setFont("Helvetica", 7)
+        c.setFont("Helvetica", 8)
 
         for i, registro in enumerate(registros):
             # Dibujar registros en la página
@@ -1088,6 +1115,7 @@ class FormularioCarga(tk.Frame):
             # Si se alcanza el límite de 18 registros por página, crear nueva página
             if (i + 1) % 18 == 0 and (i + 1) < len(registros):
                 c.showPage()
+                # c.drawImage(imagen_fondo, 0, 0, width=A4[0], height=A4[1])
                 c.drawImage(
                     imagen_fondo, 0, 0, width=A4[0], height=A4[1], preserveAspectRatio=True, anchor='c')
                 y = posicion_inicial
@@ -1107,39 +1135,34 @@ class FormularioCarga(tk.Frame):
         buffers = []
         archivo_num = 1
 
-        # Generar formularios de 18 registros mientras haya más de 9 registros
-        while len(registros_ordenados) > 9:
-            registros_a_incluir = registros_ordenados[:18]
+        while registros_ordenados:
+            if archivo_num % 2 != 0:  # Formulario impar
+                registros_a_incluir = registros_ordenados[:18]
+                imagen_fondo = fondo_impar
+                posicion_inicial = posicion_impar
+                mostrar_encabezado = True
+            else:  # Formulario par
+                registros_a_incluir = registros_ordenados[:9]
+                imagen_fondo = fondo_par
+                posicion_inicial = posicion_par
+                mostrar_encabezado = False
+
+            # Generar el PDF en memoria y añadir el buffer a la lista
             buffer = self.crear_pdf_memoria(
-                registros_a_incluir,
-                fondo_impar,
-                mostrar_encabezado=True,
-                posicion_inicial=posicion_impar
-            )
+                registros_a_incluir, imagen_fondo, mostrar_encabezado, posicion_inicial)
             buffers.append(buffer)
 
-            # Remover los registros procesados
-            registros_ordenados = registros_ordenados[18:]
+            # Remover los registros que ya se han incluido
+            registros_ordenados = registros_ordenados[len(
+                registros_a_incluir):]
             archivo_num += 1
-
-        # Siempre generar el formulario par (9 registros o menos, o vacío)
-        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []  # Puede estar vacío
-        buffer = self.crear_pdf_memoria(
-            registros_a_incluir,
-            fondo_par,
-            mostrar_encabezado=False,
-            posicion_inicial=posicion_par
-        )
-        buffers.append(buffer)
 
         # Combinar los PDFs en memoria y guardar en un único archivo
         archivo_salida = os.path.join(
             os.environ["USERPROFILE"], "Documents", "Anexos_PDFs", "Anexo_V.pdf")
         self.combinar_pdfs_memoria(buffers, archivo_salida)
-
         messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
 
-        
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
         escritor_pdf = PdfFileWriter()
 
