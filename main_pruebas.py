@@ -588,7 +588,7 @@ class FormularioCarga(tk.Frame):
             # Obtener el grado actualmente seleccionado en la base de datos
             grado_actual = self.combobox_grado.get()
             if not grado_actual:
-                messagebox.showwarning("Advertencia", "Por favor, selecciona un grado válido.")
+                messagebox.showwarning("Advertencia", "Por favor, selecciona un grado válido, gracias.")
                 return
 
             # Confirmar si desea modificar el grado
