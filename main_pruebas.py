@@ -432,6 +432,7 @@ class FormularioCarga(tk.Frame):
             #     return
             # rol_seleccionado = self.combobox_no_docente.get()  # Obtener el valor seleccionado
         else:
+            pass
             rol_seleccionado = rol  # Para Estudiante, usamos directamente el valor del Radiobutton
 
         # Verifica que los campos requeridos estén completos
@@ -452,12 +453,16 @@ class FormularioCarga(tk.Frame):
 
     def limpiar(self):
         # Limpiar los campos de entrada
+        self.combobox_grado.set("")
+        self.localidad_entry.delete(0, tk.END)
         self.apellido_entry.delete(0, tk.END)
         self.nombre_entry.delete(0, tk.END)
         self.documento_entry.delete(0, tk.END)
         self.rol_seleccionado.set("")
-        self.combobox_rol.set("")
-        self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
+        # Ensure no undefined combobox is referenced
+        if hasattr(self, 'combobox_rol'):
+            self.combobox_rol.set("")
+            self.combobox_rol.grid_remove()  # Ocultar el combobox después de agregar
 
     
 
@@ -489,10 +494,11 @@ class FormularioCarga(tk.Frame):
             finally:
                 conn.close()
         else:
-            messagebox.showwarning("Advertencia", "Seleccione un registro para borrar.")
-
+            messagebox.showwarning("Advertencia", "No se ha seleccionado ningún elemento para borrar.")
     def mostrar_o_actualizar(self):
-        self.combobox_grado.config(state="normal")
+        """
+        Handles the modification or update of a selected item in the Treeview.
+        """
         item_id = self.tree.selection()
         if item_id:
             if self.accion_actual == "mostrar":
@@ -500,7 +506,6 @@ class FormularioCarga(tk.Frame):
                 info = self.tree.item(item_id, 'values')
                 apellido_nombre = info[1]
                 documento = info[2]
-                estudiante = info[3]
                 docente = info[4]
                 no_docente = info[5]
 
@@ -521,9 +526,9 @@ class FormularioCarga(tk.Frame):
                 if docente:
                     self.rol_seleccionado.set("Docente")
                     self.combobox_docente.set(docente)
+                    self.combobox_docente.config(state="normal")  # Habilitar el combobox
                 elif no_docente:
                     self.rol_seleccionado.set("No Docente")
-                    #self.combobox_no_docente.set(no_docente)
                 else:
                     self.rol_seleccionado.set("Estudiante")
 
@@ -537,19 +542,18 @@ class FormularioCarga(tk.Frame):
                 nuevo_nombre = self.nombre_entry.get()
                 nuevo_documento = self.documento_entry.get()
                 nuevo_rol = self.rol_seleccionado.get()
-                nuevo_grado = self.combobox_grado.get()
 
                 # Concatenar Apellido y Nombre
                 nuevo_apellido_nombre = f"{nuevo_apellido}, {nuevo_nombre}"
 
                 # Determinar el valor correspondiente según el rol
                 nuevo_docente = self.combobox_docente.get() if nuevo_rol == "Docente" else ""
-                nuevo_no_docente = "X" if nuevo_rol == "No Docente" else "" #self.combobox_no_docente.get()
+                nuevo_no_docente = "X" if nuevo_rol == "No Docente" else ""
                 nuevo_estudiante = "X" if nuevo_rol == "Estudiante" else ""
 
-                # Actualizar el registro en el Treeview
+                # Actualizar el registro en el Treeview si se seleccionó un elemento
                 self.tree.item(item_id, values=(
-                    item_id,
+                    self.tree.index(item_id) + 1,
                     nuevo_apellido_nombre,
                     nuevo_documento,
                     nuevo_estudiante,
@@ -557,23 +561,40 @@ class FormularioCarga(tk.Frame):
                     nuevo_no_docente,
                 ))
 
-                # Actualizar el grado si es necesario
-                if nuevo_grado:
-                    self.IdGRADO = self.grados.get(nuevo_grado)
-
                 # Limpiar los Entry y Combobox
                 self.limpiar()
 
                 # Cambiar texto del botón de vuelta a "Modificar"
                 self.mostrar_button.config(
-                    text="Modificar", bg="white", fg="black", font=("Arial", 10, "bold"))
+                    text="Modificar seleccionado", bg="blue", fg="white", font=("Arial", 10, "bold"))
                 self.accion_actual = "mostrar"
 
                 # Guardar cambios
                 self.guardar_sqlite()
         else:
             messagebox.showwarning(
-                "Advertencia", "No se ha seleccionado ningún elemento.")
+                "Advertencia", "No se ha seleccionado ningún elemento del listado para modificar.")
+
+    def modificar_grado(self):
+        # Desbloquear el combobox_grado para permitir la selección
+        self.combobox_grado.config(state="normal")
+        item_id = self.tree.selection()
+        if item_id:
+            # Obtener el grado seleccionado en el Combobox
+            nuevo_grado = self.combobox_grado.get()
+            if nuevo_grado:
+                # Actualizar el grado en la base de datos y en la instancia
+                self.IdGRADO = self.grados.get(nuevo_grado)
+                messagebox.showinfo(
+                    "Éxito", f"Grado actualizado a {nuevo_grado}.")
+                # Bloquear nuevamente el Combobox
+                self.combobox_grado.config(state="disabled")
+            else:
+                messagebox.showwarning(
+                    "Advertencia", "Por favor, selecciona un grado válido.")
+        else:
+            messagebox.showwarning(
+                "Advertencia", "No se ha seleccionado ningún elemento del listado para modificar el grado.")
 
     def guardar_sqlite(self):
         # Obtén los registros desde el Treeview
@@ -745,7 +766,7 @@ class FormularioCarga(tk.Frame):
             messagebox.showerror("Error", f"No se pudo eliminar la excursión: {e}")
         finally:
             conn.close()
-
+        
         # Actualizar la lista de excursiones
         self.actualizar_lista_excursiones()
 
@@ -761,29 +782,6 @@ class FormularioCarga(tk.Frame):
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo actualizar la lista de excursiones: {e}")
 
-    def reiniciar_formulario(self):
-        # desbloquear combo 
-        self.combobox_grado.delete(0, tk.END)
-        self.combobox_grado.config(state="normal")
-
-        # Limpiar las entradas
-        self.lugar_entry.delete(0, tk.END)
-        self.fecha_entry.delete(0, tk.END)
-        self.localidad_entry.delete(0, tk.END)
-        self.proyecto_entry.delete(0, tk.END)
-        self.fechasalida_entry.delete(0, tk.END)    
-        self.fecharegreso_entry.delete(0, tk.END)
-        self.hora_salida_entry.delete(0, tk.END)
-        self.hora_regreso_entry.delete(0, tk.END)
-        self.lugar_estadia_entry.delete(0, tk.END)
-        self.datos_acompanantes_entry.delete(0, tk.END)
-        self.empresa_contratada_entry.delete(0, tk.END)
-        self.datos_infraestructura_entry.delete(0, tk.END)
-        self.hospitales_entry.delete(0, tk.END)
-        self.otros_datos_entry.delete(0, tk.END)
-        
-        for item in self.tree.get_children():
-            self.tree.delete(item)  # Limpiar el Treeview si es necesario
 
     def guardar_y_reiniciar(self):
         #self.guardar_sqlite()
@@ -1127,8 +1125,22 @@ class FormularioCarga(tk.Frame):
             "Éxito", f"El PDF combinado fue creado exitosamente como {nombre_archivo} en la carpeta Documentos\\Anexos_PDFs.")
 
     def reiniciar_formulario(self):
+        self.combobox_grado.set("")
+        self.localidad_entry.delete(0, tk.END)
         self.lugar_entry.delete(0, tk.END)
         self.fecha_entry.delete(0, tk.END)
+        self.proyecto_entry.delete(0, tk.END)
+        self.fechasalida_entry.delete(0, tk.END)
+        self.horasalida_entry.delete(0, tk.END)
+        self.fecharegreso_entry.delete(0, tk.END)
+        self.horaregreso_entry.delete(0, tk.END)
+        self.lugarestadia_entry.delete(0, tk.END)
+        self.datosacompañantes_entry.delete(0, tk.END)
+        self.empresacontratada_entry.delete(0, tk.END)
+        self.datosinfraestructura_entry.delete(0, tk.END)
+        self.hospitales_entry.delete(0, tk.END)
+        self.otrosdatos_entry.delete(0, tk.END)
+                    
         # Eliminar todos los registros del Treeview
         self.tree.delete(*self.tree.get_children())
         self.contador = 1  # Reiniciar contador
