@@ -161,6 +161,12 @@ class FormularioCarga(tk.Frame):
         self.mostrar_button = tk.Button(
             tabulador, text="Modificar seleccionado", command=self.mostrar_o_actualizar, bg="blue", fg="white", font=("Arial", 10, "bold"))
         self.mostrar_button.grid(row=6, column=2, sticky='ew')
+        
+        # Botón para modificar grado
+        self.modificar_grado_button = tk.Button(
+            tabulador, text="Modificar grado", command=self.modificar_grado, bg="grey", fg="white", font=("Arial", 10, "bold"))
+        self.modificar_grado_button.grid(row=6, column=3, sticky='ew')
+
 
         # Botones para borrar, guardar, cargar, generar PDF y salir
         self.borrar_btn = tk.Button(
@@ -578,24 +584,63 @@ class FormularioCarga(tk.Frame):
     def modificar_grado(self):
         # Desbloquear el combobox_grado para permitir la selección
         self.combobox_grado.config(state="normal")
-        item_id = self.tree.selection()
-        if item_id:
-            # Obtener el grado seleccionado en el Combobox
-            nuevo_grado = self.combobox_grado.get()
-            if nuevo_grado:
-                # Actualizar el grado en la base de datos y en la instancia
-                self.IdGRADO = self.grados.get(nuevo_grado)
-                messagebox.showinfo(
-                    "Éxito", f"Grado actualizado a {nuevo_grado}.")
-                # Bloquear nuevamente el Combobox
-                self.combobox_grado.config(state="disabled")
-            else:
-                messagebox.showwarning(
-                    "Advertencia", "Por favor, selecciona un grado válido.")
-        else:
-            messagebox.showwarning(
-                "Advertencia", "No se ha seleccionado ningún elemento del listado para modificar el grado.")
+        if self.IdEXCURSION:
+            # Obtener el grado actualmente seleccionado en la base de datos
+            grado_actual = self.combobox_grado.get()
+            if not grado_actual:
+                messagebox.showwarning("Advertencia", "Por favor, selecciona un grado válido.")
+                return
 
+            # Confirmar si desea modificar el grado
+            confirmacion = messagebox.askyesno("Confirmación", f"El grado actual es '{grado_actual}'. ¿Deseas modificarlo?")
+            if not confirmacion:
+                # Si no desea modificar, bloquear nuevamente el combobox y salir
+                self.combobox_grado.config(state="disabled")
+                return
+
+            # Permitir al usuario seleccionar un nuevo grado
+            messagebox.showinfo("Información", "Selecciona un nuevo grado en el Combo y se guardará en la base de datos")
+            
+            # Asociar evento para guardar el nuevo grado seleccionado
+            self.combobox_grado.bind("<<ComboboxSelected>>", self.actualizar_grado)
+        else:
+            messagebox.showwarning("Advertencia", "No se ha cargado ninguna excursión para modificar el grado.")
+
+    def actualizar_grado(self, event=None):
+        # Obtener el nuevo grado seleccionado
+        nuevo_grado = self.combobox_grado.get()
+        if not nuevo_grado:
+            messagebox.showwarning("Advertencia", "Por favor, selecciona un grado válido.")
+            return
+
+        # Obtener el ID del nuevo grado
+        nuevo_IdGRADO = self.grados.get(nuevo_grado)
+        if not nuevo_IdGRADO:
+            messagebox.showerror("Error", "No se pudo obtener el ID del grado seleccionado.")
+            return
+
+        # Actualizar el grado en la base de datos
+        try:
+            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("UPDATE excursion SET IdGRADO = ? WHERE IdEXCURSION = ?", (nuevo_IdGRADO, self.IdEXCURSION))
+            conn.commit()
+            self.IdGRADO = nuevo_IdGRADO  # Actualizar el ID del grado en la instancia
+            messagebox.showinfo("Éxito", "El grado se actualizó correctamente.")
+        except Exception as e:
+            conn.rollback()
+            messagebox.showerror("Error", f"No se pudo actualizar el grado: {e}")
+        finally:
+            conn.close()
+
+        # Bloquear nuevamente el combobox_grado
+        self.combobox_grado.config(state="disabled")
+        # Desvincular el evento para evitar múltiples actualizaciones
+        self.combobox_grado.unbind("<<ComboboxSelected>>")
+
+        # Actualizar la lista de excursiones en el combobox
+        self.actualizar_lista_excursiones()
     def guardar_sqlite(self):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
