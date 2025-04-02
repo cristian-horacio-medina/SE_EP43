@@ -56,6 +56,23 @@ class FormularioCarga(tk.Frame):
         control_tabulador.grid(row=0, column=0, columnspan=2)
 
     def crear_componentes_tabulador1(self, tabulador):
+        
+        tk.Label(tabulador, text="Grado:").grid(
+            row=0, column=0, sticky='w', padx=5, pady=5)
+        self.combobox_grado = ttk.Combobox(
+            tabulador, state="readonly", width=10)
+        self.combobox_grado.grid(row=0, column=1, sticky="w", padx=5, pady=5)
+        
+        
+        # Agregar una etiqueta y un campo de entrada para 'Fecha'
+        tk.Label(tabulador, text="Fecha de salida:").grid(
+            row=0, column=1, sticky='e', padx=5, pady=5)
+        self.fecha_entry = tk.Entry(tabulador, width=15)
+        self.fecha_entry.grid(row=0, column=2, sticky='w', padx=5, pady=5)
+
+        # Añadido: Evento para formatear la fecha
+        self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
+        
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
         tk.Label(tabulador, text="Lugar:").grid(
             row=1, column=0, sticky='w', padx=5, pady=5)
@@ -69,35 +86,6 @@ class FormularioCarga(tk.Frame):
         self.localidad_entry = tk.Entry(tabulador, width=23)
         self.localidad_entry.grid(row=1, column=2, sticky='e', padx=(0, 5), pady=5)
         self.localidad_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.localidad_entry, 33, tabulador))
-
-        
-        
-        tk.Label(tabulador, text="Grado:").grid(
-            row=0, column=0, sticky='w', padx=5, pady=5)
-        self.combobox_grado = ttk.Combobox(
-            tabulador, state="readonly", width=10)
-        self.combobox_grado.grid(row=0, column=1, sticky="w", padx=5, pady=5)
-
-        self.combobox_excursion = ttk.Combobox(
-            tabulador, state="readonly", width=40)
-        # Cambia la fila y columna según sea necesario
-        self.combobox_excursion.grid(
-            row=5, column=3, sticky="e", padx=2, pady=2)
-        self.combobox_excursiones()
-        # Asociar el evento de selección al método cargar_desde_sqlite
-        self.combobox_excursion.bind("<<ComboboxSelected>>", self.cargar_desde_sqlite)
-
-        # Cargar datos en el Combobox
-        self.cargar_grados()
-
-        # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de salida:").grid(
-            row=0, column=1, sticky='e', padx=5, pady=5)
-        self.fecha_entry = tk.Entry(tabulador, width=15)
-        self.fecha_entry.grid(row=0, column=2, sticky='w', padx=5, pady=5)
-
-        # Añadido: Evento para formatear la fecha
-        self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
 
         # Agregar una etiqueta y un campo de entrada para 'Apellido'
         tk.Label(tabulador, text="Apellido:").grid(
@@ -116,8 +104,8 @@ class FormularioCarga(tk.Frame):
             row=3, column=0, sticky='w', padx=5, pady=5)
         self.documento_entry = tk.Entry(tabulador, width=20)
         self.documento_entry.grid(row=3, column=1, sticky='w', padx=5, pady=5)
-
-        # Variable para el rol seleccionado
+        
+        #Variable para el rol seleccionado
         self.rol_seleccionado = tk.StringVar(value="Estudiante")
 
         # Radiobuttons para seleccionar rol
@@ -135,6 +123,21 @@ class FormularioCarga(tk.Frame):
             tabulador, values=["Responsable", "Reemplazante"])
         self.combobox_docente.grid(row=5, column=1, sticky="w", padx=5, pady=5)
         self.combobox_docente.config(state="disabled")
+        
+
+        self.combobox_excursion = ttk.Combobox(
+            tabulador, state="readonly", width=40)
+        # Cambia la fila y columna según sea necesario
+        self.combobox_excursion.grid(
+            row=5, column=3, sticky="e", padx=2, pady=2)
+        self.combobox_excursiones()
+        # Asociar el evento de selección al método cargar_desde_sqlite
+        self.combobox_excursion.bind("<<ComboboxSelected>>", self.cargar_desde_sqlite)
+
+        # Cargar datos en el Combobox
+        self.cargar_grados()
+
+        
 
         # Botón para nueva excursión
         self.agregar_excursion_btn = tk.Button(
