@@ -137,10 +137,10 @@ class FormularioCarga(tk.Frame):
         self.combobox_docente.config(state="disabled")
 
         # Botón para nueva excursión
-        self.agregar_btn = tk.Button(
-            tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
-        self.agregar_btn.grid(row=0, column=3, sticky='ew')
-        self.agregar_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
+        self.agregar_excursion_btn = tk.Button(
+            tabulador, text="Nueva excursión", command=self.reiniciar_formulario)
+        self.agregar_excursion_btn.grid(row=0, column=3, sticky='ew')
+        self.agregar_excursion_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
         
         #Botón eliminar excursión
         self.eliminar_excursion_btn = tk.Button(
@@ -454,7 +454,7 @@ class FormularioCarga(tk.Frame):
 
     def limpiar(self):
         # Limpiar los campos de entrada
-        self.combobox_grado.set("")
+        #self.combobox_grado.set("")
         self.localidad_entry.delete(0, tk.END)
         self.apellido_entry.delete(0, tk.END)
         self.nombre_entry.delete(0, tk.END)
@@ -640,8 +640,7 @@ class FormularioCarga(tk.Frame):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
                      for child in self.tree.get_children()]
-        #print("Contenido de registros:", registros)
-
+        
         # Obtener valores de los campos de entrada (TextBox)
         lugar = self.lugar_entry.get()
         localidad = self.localidad_entry.get()
@@ -658,6 +657,10 @@ class FormularioCarga(tk.Frame):
         hospitales = self.hospitales_entry.get()
         otros_datos = self.otrosdatos_entry.get()
 
+        # Obtener el IdGRADO del combobox_grado
+        grado_seleccionado = self.combobox_grado.get()
+        self.IdGRADO = self.grados.get(grado_seleccionado, None)
+
         # Conectar a la base de datos SQLite
         db_path = os.path.join(os.path.expanduser(
             "~"), "Documents", "Excursion.db")
@@ -669,7 +672,7 @@ class FormularioCarga(tk.Frame):
             cursor.execute('''CREATE TABLE IF NOT EXISTS excursion (
                                 IdEXCURSION INTEGER PRIMARY KEY AUTOINCREMENT,
                                 lugar TEXT,
-                                localidadad TEXT,
+                                localidad TEXT,
                                 fecha TEXT,
                                 nombre_proyecto TEXT,
                                 fecha_salida TEXT,
@@ -682,8 +685,8 @@ class FormularioCarga(tk.Frame):
                                 datos_infraestructura TEXT,
                                 hospitales TEXT,
                                 otros_datos TEXT,
-                                idgrado INTEGER,
-                                FOREIGN KEY(idgrado) REFERENCES grado(IdGRADO))''')
+                                IdGRADO INTEGER,
+                                FOREIGN KEY(IdGRADO) REFERENCES grado(IdGRADO))''')
 
             cursor.execute('''CREATE TABLE IF NOT EXISTS alumnos (
                                 IdALUMNO INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -716,7 +719,7 @@ class FormularioCarga(tk.Frame):
                 # Actualizar los datos en la tabla excursion
                 cursor.execute('''UPDATE excursion SET lugar = ?, localidad = ?, fecha = ?, nombre_proyecto = ?, fecha_salida = ?, hora_salida = ?,
                                     fecha_regreso = ?, hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
-                                    datos_infraestructura = ?, hospitales = ?, otros_datos = ?, idgrado = ?
+                                    datos_infraestructura = ?, hospitales = ?, otros_datos = ?, IdGRADO = ?
                                     WHERE IdEXCURSION = ?''',
                                (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
@@ -725,7 +728,7 @@ class FormularioCarga(tk.Frame):
                 # Insertar los datos en la tabla excursion
                 cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
                                     fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
-                                    datos_infraestructura, hospitales, otros_datos, idgrado)
+                                    datos_infraestructura, hospitales, otros_datos, IdGRADO)
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                                (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
@@ -764,12 +767,11 @@ class FormularioCarga(tk.Frame):
                         VALUES ((SELECT IdACOMPANANTES FROM acompanantes WHERE DNI = ? AND IdEXCURSION = ?), ?, ?, ?, ?, ?)
                     """, (dni, self.IdEXCURSION, apellido, nombre, dni, no_docente, self.IdEXCURSION))
 
-            #print(self.IdEXCURSION)
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
             self.combobox_grado.config(state="disabled")
-            #self.combobox_grado.set("")
+            self.actualizar_lista_excursiones()
         except Exception as e:
             conn.rollback()
             messagebox.showerror(
@@ -1173,7 +1175,8 @@ class FormularioCarga(tk.Frame):
             "Éxito", f"El PDF combinado fue creado exitosamente como {nombre_archivo} en la carpeta Documentos\\Anexos_PDFs.")
 
     def reiniciar_formulario(self):
-        self.combobox_grado.set("")
+        self.combobox_grado.focus()
+        self.combobox_grado.state("normal")
         self.localidad_entry.delete(0, tk.END)
         self.lugar_entry.delete(0, tk.END)
         self.fecha_entry.delete(0, tk.END)
