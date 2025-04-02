@@ -1026,21 +1026,29 @@ class FormularioCarga(tk.Frame):
             }
             registros.append(registro)
 
-        # Ordenar en tres grupos: Estudiantes, Docentes, No Docentes, y luego alfabéticamente en cada grupo
+        # Ordenar en tres grupos: Estudiantes, Docentes (excluyendo Reemplazantes), No Docentes, y Reemplazantes al final
         estudiantes = sorted(
             [r for r in registros if r['Alumno'] == "X"], key=lambda x: x['Apellido_Nombre'])
-        docentes = sorted([r for r in registros if r['Docente']
-                          != ""], key=lambda x: x['Apellido_Nombre'])
+        docentes = sorted(
+            [r for r in registros if r['Docente'] not in ["", "Reemplazante"]], key=lambda x: x['Apellido_Nombre'])
         no_docentes = sorted(
             [r for r in registros if r['NoDocente'] != ""], key=lambda x: x['Apellido_Nombre'])
+        reemplazantes = sorted(
+            [r for r in registros if r['Docente'] == "Reemplazante"], key=lambda x: x['Apellido_Nombre'])
 
-        # Concatenar los tres grupos en el orden solicitado
+        # Concatenar los grupos en el orden solicitado
         registros_ordenados = estudiantes + docentes + no_docentes
-        # print(registros_ordenados)
 
-        # Enumerar secuencialmente
+        # Enumerar secuencialmente solo los grupos enumerados
         for i, registro in enumerate(registros_ordenados, start=1):
             registro['Numero'] = i
+
+        # Agregar los reemplazantes al final sin numerar
+        for registro in reemplazantes:
+            registro['Numero'] = ""
+
+        # Combinar todos los registros
+        registros_ordenados += reemplazantes
 
         # Generar múltiples PDFs en memoria y combinar
         self.generar_pdfs_en_memoria(registros_ordenados)
