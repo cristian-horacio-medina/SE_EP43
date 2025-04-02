@@ -1,12 +1,10 @@
 import tkinter as tk
-import json
 import os
 import locale
 import sys
 import sqlite3
 from datetime import datetime
 from tkinter import messagebox, ttk
-from tkinter import filedialog
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
@@ -178,10 +176,7 @@ class FormularioCarga(tk.Frame):
             tabulador, text="Guardar excursión", command=self.guardar_sqlite)
         self.guardar_btn.grid(row=9, column=1, sticky='ew')
 
-        # self.cargar_btn = tk.Button(
-        #     tabulador, text="Cargar excursión", command=self.cargar_desde_sqlite)
-        # self.cargar_btn.grid(row=9, column=2, sticky='ew')
-
+        
         self.generar_pdf_btn = tk.Button(
             tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
         self.generar_pdf_btn.grid(row=9, column=2, sticky='ew')
@@ -645,7 +640,7 @@ class FormularioCarga(tk.Frame):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
                      for child in self.tree.get_children()]
-        print("Contenido de registros:", registros)
+        #print("Contenido de registros:", registros)
 
         # Obtener valores de los campos de entrada (TextBox)
         lugar = self.lugar_entry.get()
@@ -769,7 +764,7 @@ class FormularioCarga(tk.Frame):
                         VALUES ((SELECT IdACOMPANANTES FROM acompanantes WHERE DNI = ? AND IdEXCURSION = ?), ?, ?, ?, ?, ?)
                     """, (dni, self.IdEXCURSION, apellido, nombre, dni, no_docente, self.IdEXCURSION))
 
-            print(self.IdEXCURSION)
+            #print(self.IdEXCURSION)
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
@@ -845,7 +840,7 @@ class FormularioCarga(tk.Frame):
         # Guardar el ID de la excursión en la instancia
         self.IdEXCURSION = self.excursiones.get(
             excursion_seleccionada)  # Ahora sí se guarda bien
-        print(f"IdEXCURSION cargado: {self.IdEXCURSION}")  # Debug
+        #print(f"IdEXCURSION cargado: {self.IdEXCURSION}")  # Debug
 
         # Ruta fija de la base de datos
         db_path = os.path.join(os.path.expanduser(
@@ -888,7 +883,7 @@ class FormularioCarga(tk.Frame):
 
             # Obtener la descripción del grado usando IdGRADO
             IdGRADO = excursion[-1]  # El último valor en la tupla es 'IdGRADO'
-            print(f"IdGRADO obtenido: {IdGRADO}")
+            #print(f"IdGRADO obtenido: {IdGRADO}")
             self.IdGRADO = IdGRADO  # Guardar IdGRADO en la instancia
             cursor.execute("""
                 SELECT grado || seccion || turno 
