@@ -57,17 +57,17 @@ class LoginScreen:
             if role == "admin":
                 messagebox.showinfo("Login exitoso", "Bienvenido, Administrador.")
                 self.master.destroy()
+                import main
                 self.open_main_app(role)
             elif role == "operador":
                 messagebox.showinfo("Login exitoso", "Bienvenido, Operador.")
                 self.master.destroy()
+                import main
                 self.open_main_app(role)
         else:
             messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
 
     def open_main_app(self, role):
-        root = tk.Tk()
-        root.geometry("930x600")
         app = FormularioCarga(root)
         if role == "operator":
             # Deshabilitar funciones específicas para operadores
