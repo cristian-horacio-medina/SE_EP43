@@ -771,6 +771,7 @@ class FormularioCarga(tk.Frame):
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
             self.combobox_grado.config(state="disabled")
+            self.actualizar_lista_excursiones()
         except Exception as e:
             conn.rollback()
             messagebox.showerror(
@@ -1115,10 +1116,10 @@ class FormularioCarga(tk.Frame):
         while len(registros_ordenados) > 9:
             registros_a_incluir = registros_ordenados[:18]
             buffer = self.crear_pdf_memoria(
-                registros_a_incluir,
-                fondo_impar,
-                mostrar_encabezado=True,
-                posicion_inicial=posicion_impar
+            registros_a_incluir,
+            fondo_impar,
+            mostrar_encabezado=True,
+            posicion_inicial=posicion_impar
             )
             buffers.append(buffer)
 
@@ -1126,8 +1127,18 @@ class FormularioCarga(tk.Frame):
             registros_ordenados = registros_ordenados[18:]
             archivo_num += 1
 
-        # Siempre generar el formulario par (9 registros o menos, o vacío)
-        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []  # Puede estar vacío
+        # Generar el formulario impar (9 registros o menos)
+        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []
+        buffer = self.crear_pdf_memoria(
+            registros_a_incluir,
+            fondo_impar,
+            mostrar_encabezado=True,
+            posicion_inicial=posicion_impar
+        )
+        buffers.append(buffer)
+
+        # Generar el formulario par (siempre, incluso si no hay registros restantes)
+        registros_a_incluir = registros_ordenados[9:] if len(registros_ordenados) > 9 else []
         buffer = self.crear_pdf_memoria(
             registros_a_incluir,
             fondo_par,
