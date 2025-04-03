@@ -902,6 +902,7 @@ class FormularioCarga(tk.Frame):
                 self.combobox_grado.set("")
 
             # Bloquear el ComboBox para evitar cambios accidentales
+            #El valor de grado se guada en la instancia self.IdGRADO o sea en la variable de clase IdGRADO
             self.combobox_grado.config(state="readonly")
 
             # Limpiar Treeview
