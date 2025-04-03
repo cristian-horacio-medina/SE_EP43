@@ -589,8 +589,7 @@ class FormularioCarga(tk.Frame):
             confirmacion = messagebox.askyesno("Confirmación", f"El grado actual es '{grado_actual}'. ¿Deseas modificarlo?")
             if not confirmacion:
                 # Si no desea modificar, bloquear nuevamente el combobox y salir
-                self.combobox_grado.set(grado_actual)
-                messagebox.showinfo("Información", "El grado actual no puede ser modificado directamente. Si deseas cambiarlo, selecciona una nueva excursión o crea una nueva.")
+                self.combobox_grado.config(state="readonly")
                 return
 
             # Permitir al usuario seleccionar un nuevo grado
@@ -630,7 +629,7 @@ class FormularioCarga(tk.Frame):
             conn.close()
 
         # Bloquear nuevamente el combobox_grado
-        self.combobox_grado.config(state="disabled")
+        self.combobox_grado.config(state="readonly")
         # Desvincular el evento para evitar múltiples actualizaciones
         self.combobox_grado.unbind("<<ComboboxSelected>>")
 
@@ -770,7 +769,8 @@ class FormularioCarga(tk.Frame):
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
-            self.combobox_grado.config(state="normal")
+            self.combobox_grado.config(state="readonly")  # Mantenerlo en readonly para evitar modificaciones
+            
             self.actualizar_lista_excursiones()
         except Exception as e:
             conn.rollback()
@@ -902,7 +902,7 @@ class FormularioCarga(tk.Frame):
                 self.combobox_grado.set("")
 
             # Bloquear el ComboBox para evitar cambios accidentales
-            self.combobox_grado.config(state="normal")
+            self.combobox_grado.config(state="readonly")
 
             # Limpiar Treeview
             for item in self.tree.get_children():
@@ -949,6 +949,7 @@ class FormularioCarga(tk.Frame):
                 self.tree.insert("", "end", values=registro_desplazado)
 
             messagebox.showinfo("Éxito", "Registros cargados correctamente.")
+            
         except Exception as e:
             messagebox.showerror(
                 "Error", f"Error al cargar los datos desde {db_path}: {e}")
