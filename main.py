@@ -53,7 +53,7 @@ class FormularioCarga(tk.Frame):
         control_tabulador.add(tabulador2, text='Datos Anexo VI')
         self.crear_componentes_tabulador2(tabulador2)
         # Colocamos el control de tabuladores en el contenedor principal
-        control_tabulador.grid(row=0, column=0, columnspan=2)
+        control_tabulador.grid(row=0, column=0, columnspan=4)
 
     def crear_componentes_tabulador1(self, tabulador):
         
@@ -294,7 +294,7 @@ class FormularioCarga(tk.Frame):
         self.proyecto_entry.grid(
             row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.proyecto_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.proyecto_entry, 50, tabulador))
+            self.proyecto_entry, 47, tabulador))
 
         # Agregar una etiqueta a Lugar de salida
         tk.Label(tabulador, text="Lugar de salida: E.P. Nº 43").grid(
@@ -344,7 +344,7 @@ class FormularioCarga(tk.Frame):
         self.lugarestadia_entry.grid(
             row=3, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.lugarestadia_entry, 44, tabulador))
+            self.lugarestadia_entry, 40, tabulador))
 
         # Nombre y tel. de los acompañantes
         tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(
@@ -353,7 +353,7 @@ class FormularioCarga(tk.Frame):
         self.datosacompañantes_entry.grid(
             row=4, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosacompañantes_entry, 43, tabulador))
+            self.datosacompañantes_entry, 40, tabulador))
         # Empresa y/o empresas contratadas
         tk.Label(tabulador, text="Empresa/s contratada/s\n(nombre, dirección, tel.:").grid(
             row=5, column=0, sticky='w', padx=5, pady=5)
@@ -361,7 +361,7 @@ class FormularioCarga(tk.Frame):
         self.empresacontratada_entry.grid(
             row=5, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.empresacontratada_entry, 102, tabulador))
+            self.empresacontratada_entry, 98, tabulador))
 
         # Otros datos de la infraestructura disponible
         tk.Label(tabulador, text="Otros datos de la\ninfraestructura disponible:").grid(
@@ -370,7 +370,7 @@ class FormularioCarga(tk.Frame):
         self.datosinfraestructura_entry.grid(
             row=6, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosinfraestructura_entry, 124, tabulador))
+            self.datosinfraestructura_entry, 116, tabulador))
 
         # Hospitales y centros asistenciales cercanos\n(direcciones y teléfonos)
         tk.Label(tabulador, text="Hospitales y centros asist.\ncercanos(direcciones y tel.:").grid(
@@ -379,7 +379,7 @@ class FormularioCarga(tk.Frame):
         self.hospitales_entry.grid(
             row=7, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.hospitales_entry, 98, tabulador))
+            self.hospitales_entry, 95, tabulador))
 
         # Otros datos de la interés
         tk.Label(tabulador, text="Otros datos de interés:").grid(
@@ -388,12 +388,12 @@ class FormularioCarga(tk.Frame):
         self.otrosdatos_entry.grid(
             row=8, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.otrosdatos_entry, 137, tabulador))
+            self.otrosdatos_entry, 135, tabulador))
 
         # Botón para actualizar el Label con el dato ingresado en Entry
-        self.btn_actualizar = tk.Button(
-            tabulador, text="Guardar", command=self.guardar_sqlite)
-        self.btn_actualizar.grid(row=10, column=1, sticky='e', padx=5, pady=5)
+        # self.btn_guardar_2 = tk.Button(
+        #     tabulador, text="Guardar", command=self.guardar_sqlite)
+        # self.btn_guardar_2.grid(row=10, column=1, sticky='e', padx=5, pady=5)
 
     def mostrar_advertencia(self, texto):
 
@@ -430,11 +430,7 @@ class FormularioCarga(tk.Frame):
             rol_seleccionado = self.combobox_docente.get()  # Obtener el valor seleccionado
         elif rol == "No Docente":
             pass
-            # if not self.combobox_no_docente.get():  # Si no se seleccionó un valor en el combobox
-            #     messagebox.showwarning(
-            #         "Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para No Docente.")
-            #     return
-            # rol_seleccionado = self.combobox_no_docente.get()  # Obtener el valor seleccionado
+            
         else:
             pass
             rol_seleccionado = rol  # Para Estudiante, usamos directamente el valor del Radiobutton
@@ -593,7 +589,8 @@ class FormularioCarga(tk.Frame):
             confirmacion = messagebox.askyesno("Confirmación", f"El grado actual es '{grado_actual}'. ¿Deseas modificarlo?")
             if not confirmacion:
                 # Si no desea modificar, bloquear nuevamente el combobox y salir
-                self.combobox_grado.config(state="disabled")
+                self.combobox_grado.set(grado_actual)
+                messagebox.showinfo("Información", "El grado actual no puede ser modificado directamente. Si deseas cambiarlo, selecciona una nueva excursión o crea una nueva.")
                 return
 
             # Permitir al usuario seleccionar un nuevo grado
@@ -773,7 +770,7 @@ class FormularioCarga(tk.Frame):
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
-            self.combobox_grado.config(state="disabled")
+            self.combobox_grado.config(state="normal")
             self.actualizar_lista_excursiones()
         except Exception as e:
             conn.rollback()
@@ -905,7 +902,7 @@ class FormularioCarga(tk.Frame):
                 self.combobox_grado.set("")
 
             # Bloquear el ComboBox para evitar cambios accidentales
-            self.combobox_grado.config(state="disabled")
+            self.combobox_grado.config(state="normal")
 
             # Limpiar Treeview
             for item in self.tree.get_children():
@@ -1319,13 +1316,13 @@ class FormularioCarga(tk.Frame):
 
         # Divido los textos, que rebasan el primer renglón y tienen dos entry
         primera_linea_empresa_contratada, segunda_linea_proyecto_empresa_contratada = self.dividir_texto(
-            empresa_contratada, 24, 78)
+            empresa_contratada, 20, 78)
         primera_linea_datos_infraestructura, segunda_linea_datos_infraestructura = self.dividir_texto(
-            datos_infraestructura, 46, 78)
+            datos_infraestructura, 38, 78)
         primera_linea_datos_hospitales, segunda_linea_datos_hospitales = self.dividir_texto(
-            hospitales, 20, 78)
+            hospitales, 17, 78)
         primera_linea_otros_datos, segunda_linea_otros_datos = self.dividir_texto(
-            otros_datos, 58, 78)
+            otros_datos, 57, 78)
 
         # Primera página - datos completos del alumno y encabezado
         c.drawImage(fondo_hoja_1, 0, 0, width=A4[0], height=A4[1])
@@ -1414,6 +1411,6 @@ class FormularioCarga(tk.Frame):
 
 
 root = tk.Tk()
-root.geometry("930x600")
+root.geometry("960x600")
 app = FormularioCarga(root)
 root.mainloop()
