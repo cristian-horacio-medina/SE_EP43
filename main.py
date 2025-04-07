@@ -914,7 +914,7 @@ class FormularioCarga(tk.Frame):
 
             # Bloquear el ComboBox para evitar cambios accidentales
             self.combobox_grado.config(state="disabled")
-            messagebox.showinfo(self.IdGRADO, f"El ID del grado seleccionado es: {self.IdGRADO}")
+            #messagebox.showinfo(self.IdGRADO, f"El ID del grado seleccionado es: {self.IdGRADO}")
             # Limpiar Treeview
             for item in self.tree.get_children():
                 self.tree.delete(item)
