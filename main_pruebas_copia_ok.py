@@ -53,7 +53,7 @@ class FormularioCarga(tk.Frame):
         control_tabulador.add(tabulador2, text='Datos Anexo VI')
         self.crear_componentes_tabulador2(tabulador2)
         # Colocamos el control de tabuladores en el contenedor principal
-        control_tabulador.grid(row=0, column=0, columnspan=2)
+        control_tabulador.grid(row=0, column=0, columnspan=4)
 
     def crear_componentes_tabulador1(self, tabulador):
         
@@ -141,7 +141,7 @@ class FormularioCarga(tk.Frame):
 
         # Botón para nueva excursión
         self.agregar_excursion_btn = tk.Button(
-            tabulador, text="Nueva excursión", command=self.reiniciar_formulario)
+            tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
         self.agregar_excursion_btn.grid(row=0, column=3, sticky='ew')
         self.agregar_excursion_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
         
@@ -183,14 +183,23 @@ class FormularioCarga(tk.Frame):
         self.generar_pdf_btn = tk.Button(
             tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
         self.generar_pdf_btn.grid(row=9, column=2, sticky='ew')
-
-        self.salir_btn = tk.Button(tabulador, text="Salir", command=quit)
-        self.salir_btn.grid(row=10, column=2, columnspan=2, sticky='ew')
+       
 
         # Botón para generar los PDFs individuales
         self.generar_pdfs_btn = tk.Button(
             tabulador, text="Generar Anexo VI", command=self.generar_pdf_Anexo_VI)
         self.generar_pdfs_btn.grid(row=9, column=3, sticky='ew')
+
+        self.salir_btn = tk.Button(tabulador, text="Salir", command=self.confirmar_salida)
+        self.salir_btn.grid(row=10, column=1, columnspan=2, sticky='ew')
+
+    
+
+        # Botón para abrir la carpeta donde se guardó el PDF
+        abrir_carpeta_btn = tk.Button(
+            tabulador, text="Abrir carpeta con Anexos", command=lambda: os.startfile(os.path.join(os.path.expanduser("~"), "Documents", "Anexos_PDFs")))
+        abrir_carpeta_btn.grid(row=10, column=3, sticky='ew')
+
 
         tabulador.grid_rowconfigure(6, weight=1)  # Fila del Treeview
         tabulador.grid_columnconfigure(0, weight=1)  # Primera columna
@@ -223,6 +232,12 @@ class FormularioCarga(tk.Frame):
         self.tree.configure(yscrollcommand=tree_scroll.set)
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
         tree_scroll.grid(row=8, column=4, sticky='ns')
+
+    def confirmar_salida(self):
+        if messagebox.askyesno("Confirmación", "¿Desea guardar los cambios antes de salir?"):
+            self.guardar_sqlite()
+        if messagebox.askyesno("Confirmación", "¿Está seguro de que desea salir?"):
+            quit()    
 
     def limitar_texto(self, texto):
         return len(texto) <= 33
@@ -294,7 +309,7 @@ class FormularioCarga(tk.Frame):
         self.proyecto_entry.grid(
             row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.proyecto_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.proyecto_entry, 50, tabulador))
+            self.proyecto_entry, 47, tabulador))
 
         # Agregar una etiqueta a Lugar de salida
         tk.Label(tabulador, text="Lugar de salida: E.P. Nº 43").grid(
@@ -340,20 +355,20 @@ class FormularioCarga(tk.Frame):
         # Lugares de estadía
         tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
-        self.lugarestadia_entry = tk.Entry(tabulador, width=44)
+        self.lugarestadia_entry = tk.Entry(tabulador, width=46)
         self.lugarestadia_entry.grid(
             row=3, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.lugarestadia_entry, 44, tabulador))
+            self.lugarestadia_entry, 40, tabulador))
 
         # Nombre y tel. de los acompañantes
         tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(
             row=4, column=0, sticky='w', padx=5, pady=5)
-        self.datosacompañantes_entry = tk.Entry(tabulador, width=43)
+        self.datosacompañantes_entry = tk.Entry(tabulador, width=46)
         self.datosacompañantes_entry.grid(
             row=4, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosacompañantes_entry, 43, tabulador))
+            self.datosacompañantes_entry, 40, tabulador))
         # Empresa y/o empresas contratadas
         tk.Label(tabulador, text="Empresa/s contratada/s\n(nombre, dirección, tel.:").grid(
             row=5, column=0, sticky='w', padx=5, pady=5)
@@ -361,7 +376,7 @@ class FormularioCarga(tk.Frame):
         self.empresacontratada_entry.grid(
             row=5, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.empresacontratada_entry, 102, tabulador))
+            self.empresacontratada_entry, 98, tabulador))
 
         # Otros datos de la infraestructura disponible
         tk.Label(tabulador, text="Otros datos de la\ninfraestructura disponible:").grid(
@@ -370,7 +385,7 @@ class FormularioCarga(tk.Frame):
         self.datosinfraestructura_entry.grid(
             row=6, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosinfraestructura_entry, 124, tabulador))
+            self.datosinfraestructura_entry, 116, tabulador))
 
         # Hospitales y centros asistenciales cercanos\n(direcciones y teléfonos)
         tk.Label(tabulador, text="Hospitales y centros asist.\ncercanos(direcciones y tel.:").grid(
@@ -379,7 +394,7 @@ class FormularioCarga(tk.Frame):
         self.hospitales_entry.grid(
             row=7, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.hospitales_entry, 98, tabulador))
+            self.hospitales_entry, 95, tabulador))
 
         # Otros datos de la interés
         tk.Label(tabulador, text="Otros datos de interés:").grid(
@@ -388,12 +403,12 @@ class FormularioCarga(tk.Frame):
         self.otrosdatos_entry.grid(
             row=8, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.otrosdatos_entry, 137, tabulador))
+            self.otrosdatos_entry, 135, tabulador))
 
         # Botón para actualizar el Label con el dato ingresado en Entry
-        self.btn_actualizar = tk.Button(
-            tabulador, text="Guardar", command=self.guardar_sqlite)
-        self.btn_actualizar.grid(row=10, column=1, sticky='e', padx=5, pady=5)
+        # self.btn_guardar_2 = tk.Button(
+        #     tabulador, text="Guardar", command=self.guardar_sqlite)
+        # self.btn_guardar_2.grid(row=10, column=1, sticky='e', padx=5, pady=5)
 
     def mostrar_advertencia(self, texto):
 
@@ -430,11 +445,7 @@ class FormularioCarga(tk.Frame):
             rol_seleccionado = self.combobox_docente.get()  # Obtener el valor seleccionado
         elif rol == "No Docente":
             pass
-            # if not self.combobox_no_docente.get():  # Si no se seleccionó un valor en el combobox
-            #     messagebox.showwarning(
-            #         "Advertencia", "Por favor, seleccione 'Responsable' o 'Reemplazante' para No Docente.")
-            #     return
-            # rol_seleccionado = self.combobox_no_docente.get()  # Obtener el valor seleccionado
+            
         else:
             pass
             rol_seleccionado = rol  # Para Estudiante, usamos directamente el valor del Radiobutton
@@ -457,8 +468,6 @@ class FormularioCarga(tk.Frame):
 
     def limpiar(self):
         # Limpiar los campos de entrada
-        #self.combobox_grado.set("")
-        self.localidad_entry.delete(0, tk.END)
         self.apellido_entry.delete(0, tk.END)
         self.nombre_entry.delete(0, tk.END)
         self.documento_entry.delete(0, tk.END)
@@ -593,7 +602,7 @@ class FormularioCarga(tk.Frame):
             confirmacion = messagebox.askyesno("Confirmación", f"El grado actual es '{grado_actual}'. ¿Deseas modificarlo?")
             if not confirmacion:
                 # Si no desea modificar, bloquear nuevamente el combobox y salir
-                self.combobox_grado.config(state="disabled")
+                self.combobox_grado.config(state="readonly")
                 return
 
             # Permitir al usuario seleccionar un nuevo grado
@@ -633,7 +642,7 @@ class FormularioCarga(tk.Frame):
             conn.close()
 
         # Bloquear nuevamente el combobox_grado
-        self.combobox_grado.config(state="disabled")
+        self.combobox_grado.config(state="readonly")
         # Desvincular el evento para evitar múltiples actualizaciones
         self.combobox_grado.unbind("<<ComboboxSelected>>")
 
@@ -662,8 +671,8 @@ class FormularioCarga(tk.Frame):
 
         # Obtener el IdGRADO del combobox_grado
         grado_seleccionado = self.combobox_grado.get()
-        self.IdGRADO = self.grados.get(grado_seleccionado, None)
-
+        #self.IdGRADO = self.grados.get(grado_seleccionado, None)
+        #messagebox.showinfo("Información", f"El ID del grado seleccionado es: {self.IdGRADO}")
         # Conectar a la base de datos SQLite
         db_path = os.path.join(os.path.expanduser(
             "~"), "Documents", "Excursion.db")
@@ -773,7 +782,8 @@ class FormularioCarga(tk.Frame):
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
-            self.combobox_grado.config(state="disabled")
+            self.combobox_grado.config(state="disabled")  # Mantenerlo en readonly para evitar modificaciones
+            
             self.actualizar_lista_excursiones()
         except Exception as e:
             conn.rollback()
@@ -829,7 +839,7 @@ class FormularioCarga(tk.Frame):
 
 
     def guardar_y_reiniciar(self):
-        #self.guardar_sqlite()
+        self.guardar_sqlite()
         self.reiniciar_formulario()
         self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
 
@@ -845,7 +855,6 @@ class FormularioCarga(tk.Frame):
         # Guardar el ID de la excursión en la instancia
         self.IdEXCURSION = self.excursiones.get(
             excursion_seleccionada)  # Ahora sí se guarda bien
-        #print(f"IdEXCURSION cargado: {self.IdEXCURSION}")  # Debug
 
         # Ruta fija de la base de datos
         db_path = os.path.join(os.path.expanduser(
@@ -888,7 +897,6 @@ class FormularioCarga(tk.Frame):
 
             # Obtener la descripción del grado usando IdGRADO
             IdGRADO = excursion[-1]  # El último valor en la tupla es 'IdGRADO'
-            #print(f"IdGRADO obtenido: {IdGRADO}")
             self.IdGRADO = IdGRADO  # Guardar IdGRADO en la instancia
             cursor.execute("""
                 SELECT grado || seccion || turno 
@@ -906,7 +914,7 @@ class FormularioCarga(tk.Frame):
 
             # Bloquear el ComboBox para evitar cambios accidentales
             self.combobox_grado.config(state="disabled")
-
+            messagebox.showinfo(self.IdGRADO, f"El ID del grado seleccionado es: {self.IdGRADO}")
             # Limpiar Treeview
             for item in self.tree.get_children():
                 self.tree.delete(item)
@@ -952,6 +960,7 @@ class FormularioCarga(tk.Frame):
                 self.tree.insert("", "end", values=registro_desplazado)
 
             messagebox.showinfo("Éxito", "Registros cargados correctamente.")
+
         except Exception as e:
             messagebox.showerror(
                 "Error", f"Error al cargar los datos desde {db_path}: {e}")
@@ -980,7 +989,7 @@ class FormularioCarga(tk.Frame):
         # La consulta SQL que proporcionaste
         consulta = """
         SELECT DISTINCT
-            alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+            alumnos.apellido || ', ' || alumnos.nombre AS Apellido_Nombre,
             alumnos.DNI AS DNI,
             'X' AS Alumno,
             '' AS Docente,
@@ -995,7 +1004,7 @@ class FormularioCarga(tk.Frame):
         UNION ALL
 
         SELECT DISTINCT
-            acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
+            acompanantes.apellido || ', ' || acompanantes.nombre AS Apellido_Nombre,
             acompanantes.DNI AS DNI,
             '' AS Alumno,
             IFNULL(acompanantes.DOCENTE, '') AS Docente,
@@ -1189,7 +1198,8 @@ class FormularioCarga(tk.Frame):
 
     def reiniciar_formulario(self):
         self.combobox_grado.focus()
-        self.combobox_grado.state("normal")
+        self.combobox_grado.state(["!disabled"])
+        self.combobox_grado.set("")  # Limpiar el combobox de grados
         self.localidad_entry.delete(0, tk.END)
         self.lugar_entry.delete(0, tk.END)
         self.fecha_entry.delete(0, tk.END)
@@ -1301,7 +1311,7 @@ class FormularioCarga(tk.Frame):
 
         # Datos generales desde los TextBox
         establecimiento = "E.P."
-        numero_establecimiento = "43"
+        numero_establecimiento = "Nº 43"
         distrito = "ESTEBAN ECHEVERRÍA"
         lugar = self.lugar_entry.get()  # Lugar tomado directamente del TextBox
 
@@ -1319,13 +1329,13 @@ class FormularioCarga(tk.Frame):
 
         # Divido los textos, que rebasan el primer renglón y tienen dos entry
         primera_linea_empresa_contratada, segunda_linea_proyecto_empresa_contratada = self.dividir_texto(
-            empresa_contratada, 24, 78)
+            empresa_contratada, 20, 78)
         primera_linea_datos_infraestructura, segunda_linea_datos_infraestructura = self.dividir_texto(
-            datos_infraestructura, 46, 78)
+            datos_infraestructura, 39, 77)
         primera_linea_datos_hospitales, segunda_linea_datos_hospitales = self.dividir_texto(
-            hospitales, 20, 78)
+            hospitales, 17, 77)
         primera_linea_otros_datos, segunda_linea_otros_datos = self.dividir_texto(
-            otros_datos, 58, 78)
+            otros_datos, 57, 78)
 
         # Primera página - datos completos del alumno y encabezado
         c.drawImage(fondo_hoja_1, 0, 0, width=A4[0], height=A4[1])
@@ -1347,12 +1357,12 @@ class FormularioCarga(tk.Frame):
 
         c.drawString(255.15, 591, proyecto)
         c.drawString(85, 540, establecimiento)
-        c.drawString(120, 540, numero_establecimiento)
+        c.drawString(110,540, numero_establecimiento)
         c.drawString(144, 540, f",{fecha_formateada}, ")
         #c.drawString(180, 540, f"{dia},")
         c.drawString(290, 540, hora_salida + " hs.")
         c.drawString(227, 514, establecimiento)
-        c.drawString(260, 514, numero_establecimiento)
+        c.drawString(250, 514, numero_establecimiento)
         c.drawString(280, 514, f",{fecha_formateada}, ")
         #c.drawString(320, 514, f"{dia},")
         c.drawString(420, 514, hora_regreso + " hs.")
@@ -1411,9 +1421,10 @@ class FormularioCarga(tk.Frame):
 
         messagebox.showinfo(
             "Éxito", f"El PDF fue creado exitosamente como {os.path.basename(nombre_archivo)} en la carpeta Documentos\\Anexos_PDFs.")
-
+        
+        
 
 root = tk.Tk()
-root.geometry("930x600")
+root.geometry("960x600")
 app = FormularioCarga(root)
 root.mainloop()
