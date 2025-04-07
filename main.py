@@ -141,7 +141,7 @@ class FormularioCarga(tk.Frame):
 
         # Botón para nueva excursión
         self.agregar_excursion_btn = tk.Button(
-            tabulador, text="Nueva excursión", command=self.reiniciar_formulario)
+            tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
         self.agregar_excursion_btn.grid(row=0, column=3, sticky='ew')
         self.agregar_excursion_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
         
@@ -183,14 +183,23 @@ class FormularioCarga(tk.Frame):
         self.generar_pdf_btn = tk.Button(
             tabulador, text="Generar Anexo V", command=self.generar_pdf_Anexo_V)
         self.generar_pdf_btn.grid(row=9, column=2, sticky='ew')
-
-        self.salir_btn = tk.Button(tabulador, text="Salir", command=quit)
-        self.salir_btn.grid(row=10, column=2, columnspan=2, sticky='ew')
+       
 
         # Botón para generar los PDFs individuales
         self.generar_pdfs_btn = tk.Button(
             tabulador, text="Generar Anexo VI", command=self.generar_pdf_Anexo_VI)
         self.generar_pdfs_btn.grid(row=9, column=3, sticky='ew')
+
+        self.salir_btn = tk.Button(tabulador, text="Salir", command=self.confirmar_salida)
+        self.salir_btn.grid(row=10, column=1, columnspan=2, sticky='ew')
+
+    
+
+        # Botón para abrir la carpeta donde se guardó el PDF
+        abrir_carpeta_btn = tk.Button(
+            tabulador, text="Abrir carpeta con Anexos", command=lambda: os.startfile(os.path.join(os.path.expanduser("~"), "Documents", "Anexos_PDFs")))
+        abrir_carpeta_btn.grid(row=10, column=3, sticky='ew')
+
 
         tabulador.grid_rowconfigure(6, weight=1)  # Fila del Treeview
         tabulador.grid_columnconfigure(0, weight=1)  # Primera columna
@@ -223,6 +232,12 @@ class FormularioCarga(tk.Frame):
         self.tree.configure(yscrollcommand=tree_scroll.set)
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
         tree_scroll.grid(row=8, column=4, sticky='ns')
+
+    def confirmar_salida(self):
+        if messagebox.askyesno("Confirmación", "¿Desea guardar los cambios antes de salir?"):
+            self.guardar_sqlite()
+        if messagebox.askyesno("Confirmación", "¿Está seguro de que desea salir?"):
+            quit()    
 
     def limitar_texto(self, texto):
         return len(texto) <= 33
@@ -340,7 +355,7 @@ class FormularioCarga(tk.Frame):
         # Lugares de estadía
         tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
-        self.lugarestadia_entry = tk.Entry(tabulador, width=44)
+        self.lugarestadia_entry = tk.Entry(tabulador, width=46)
         self.lugarestadia_entry.grid(
             row=3, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
@@ -349,7 +364,7 @@ class FormularioCarga(tk.Frame):
         # Nombre y tel. de los acompañantes
         tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(
             row=4, column=0, sticky='w', padx=5, pady=5)
-        self.datosacompañantes_entry = tk.Entry(tabulador, width=43)
+        self.datosacompañantes_entry = tk.Entry(tabulador, width=46)
         self.datosacompañantes_entry.grid(
             row=4, column=1, columnspan=2, sticky='w', padx=5, pady=5)
         self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
@@ -453,8 +468,6 @@ class FormularioCarga(tk.Frame):
 
     def limpiar(self):
         # Limpiar los campos de entrada
-        #self.combobox_grado.set("")
-        self.localidad_entry.delete(0, tk.END)
         self.apellido_entry.delete(0, tk.END)
         self.nombre_entry.delete(0, tk.END)
         self.documento_entry.delete(0, tk.END)
@@ -658,8 +671,8 @@ class FormularioCarga(tk.Frame):
 
         # Obtener el IdGRADO del combobox_grado
         grado_seleccionado = self.combobox_grado.get()
-        self.IdGRADO = self.grados.get(grado_seleccionado, None)
-
+        #self.IdGRADO = self.grados.get(grado_seleccionado, None)
+        #messagebox.showinfo("Información", f"El ID del grado seleccionado es: {self.IdGRADO}")
         # Conectar a la base de datos SQLite
         db_path = os.path.join(os.path.expanduser(
             "~"), "Documents", "Excursion.db")
@@ -769,7 +782,7 @@ class FormularioCarga(tk.Frame):
             conn.commit()
             messagebox.showinfo(
                 "Éxito", "Datos guardados correctamente en la base de datos.")
-            self.combobox_grado.config(state="readonly")  # Mantenerlo en readonly para evitar modificaciones
+            self.combobox_grado.config(state="disabled")  # Mantenerlo en readonly para evitar modificaciones
             
             self.actualizar_lista_excursiones()
         except Exception as e:
@@ -826,7 +839,7 @@ class FormularioCarga(tk.Frame):
 
 
     def guardar_y_reiniciar(self):
-        #self.guardar_sqlite()
+        self.guardar_sqlite()
         self.reiniciar_formulario()
         self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
 
@@ -842,7 +855,6 @@ class FormularioCarga(tk.Frame):
         # Guardar el ID de la excursión en la instancia
         self.IdEXCURSION = self.excursiones.get(
             excursion_seleccionada)  # Ahora sí se guarda bien
-        #print(f"IdEXCURSION cargado: {self.IdEXCURSION}")  # Debug
 
         # Ruta fija de la base de datos
         db_path = os.path.join(os.path.expanduser(
@@ -885,7 +897,6 @@ class FormularioCarga(tk.Frame):
 
             # Obtener la descripción del grado usando IdGRADO
             IdGRADO = excursion[-1]  # El último valor en la tupla es 'IdGRADO'
-            #print(f"IdGRADO obtenido: {IdGRADO}")
             self.IdGRADO = IdGRADO  # Guardar IdGRADO en la instancia
             cursor.execute("""
                 SELECT grado || seccion || turno 
@@ -902,9 +913,8 @@ class FormularioCarga(tk.Frame):
                 self.combobox_grado.set("")
 
             # Bloquear el ComboBox para evitar cambios accidentales
-            #El valor de grado se guada en la instancia self.IdGRADO o sea en la variable de clase IdGRADO
-            self.combobox_grado.config(state="readonly")
-
+            self.combobox_grado.config(state="disabled")
+            messagebox.showinfo(self.IdGRADO, f"El ID del grado seleccionado es: {self.IdGRADO}")
             # Limpiar Treeview
             for item in self.tree.get_children():
                 self.tree.delete(item)
@@ -950,7 +960,7 @@ class FormularioCarga(tk.Frame):
                 self.tree.insert("", "end", values=registro_desplazado)
 
             messagebox.showinfo("Éxito", "Registros cargados correctamente.")
-            
+
         except Exception as e:
             messagebox.showerror(
                 "Error", f"Error al cargar los datos desde {db_path}: {e}")
@@ -979,7 +989,7 @@ class FormularioCarga(tk.Frame):
         # La consulta SQL que proporcionaste
         consulta = """
         SELECT DISTINCT
-            alumnos.apellido || ' ' || alumnos.nombre AS Apellido_Nombre,
+            alumnos.apellido || ', ' || alumnos.nombre AS Apellido_Nombre,
             alumnos.DNI AS DNI,
             'X' AS Alumno,
             '' AS Docente,
@@ -994,7 +1004,7 @@ class FormularioCarga(tk.Frame):
         UNION ALL
 
         SELECT DISTINCT
-            acompanantes.apellido || ' ' || acompanantes.nombre AS Apellido_Nombre,
+            acompanantes.apellido || ', ' || acompanantes.nombre AS Apellido_Nombre,
             acompanantes.DNI AS DNI,
             '' AS Alumno,
             IFNULL(acompanantes.DOCENTE, '') AS Docente,
@@ -1188,7 +1198,8 @@ class FormularioCarga(tk.Frame):
 
     def reiniciar_formulario(self):
         self.combobox_grado.focus()
-        self.combobox_grado.state("normal")
+        self.combobox_grado.state(["!disabled"])
+        self.combobox_grado.set("")  # Limpiar el combobox de grados
         self.localidad_entry.delete(0, tk.END)
         self.lugar_entry.delete(0, tk.END)
         self.fecha_entry.delete(0, tk.END)
@@ -1300,7 +1311,7 @@ class FormularioCarga(tk.Frame):
 
         # Datos generales desde los TextBox
         establecimiento = "E.P."
-        numero_establecimiento = "43"
+        numero_establecimiento = "Nº 43"
         distrito = "ESTEBAN ECHEVERRÍA"
         lugar = self.lugar_entry.get()  # Lugar tomado directamente del TextBox
 
@@ -1320,9 +1331,9 @@ class FormularioCarga(tk.Frame):
         primera_linea_empresa_contratada, segunda_linea_proyecto_empresa_contratada = self.dividir_texto(
             empresa_contratada, 20, 78)
         primera_linea_datos_infraestructura, segunda_linea_datos_infraestructura = self.dividir_texto(
-            datos_infraestructura, 38, 78)
+            datos_infraestructura, 39, 77)
         primera_linea_datos_hospitales, segunda_linea_datos_hospitales = self.dividir_texto(
-            hospitales, 17, 78)
+            hospitales, 17, 77)
         primera_linea_otros_datos, segunda_linea_otros_datos = self.dividir_texto(
             otros_datos, 57, 78)
 
@@ -1346,12 +1357,12 @@ class FormularioCarga(tk.Frame):
 
         c.drawString(255.15, 591, proyecto)
         c.drawString(85, 540, establecimiento)
-        c.drawString(120, 540, numero_establecimiento)
+        c.drawString(110,540, numero_establecimiento)
         c.drawString(144, 540, f",{fecha_formateada}, ")
         #c.drawString(180, 540, f"{dia},")
         c.drawString(290, 540, hora_salida + " hs.")
         c.drawString(227, 514, establecimiento)
-        c.drawString(260, 514, numero_establecimiento)
+        c.drawString(250, 514, numero_establecimiento)
         c.drawString(280, 514, f",{fecha_formateada}, ")
         #c.drawString(320, 514, f"{dia},")
         c.drawString(420, 514, hora_regreso + " hs.")
@@ -1410,7 +1421,8 @@ class FormularioCarga(tk.Frame):
 
         messagebox.showinfo(
             "Éxito", f"El PDF fue creado exitosamente como {os.path.basename(nombre_archivo)} en la carpeta Documentos\\Anexos_PDFs.")
-
+        
+        
 
 root = tk.Tk()
 root.geometry("960x600")
