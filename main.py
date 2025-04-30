@@ -267,11 +267,12 @@ class FormularioCarga(tk.Frame):
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
 
-            # Obtener las excursiones con su ID, lugar, fecha y grado
+            # Obtener las excursiones con su ID, lugar, fecha y grado, ordenadas por fecha en formato de fecha real
             cursor.execute("""
                 SELECT IdEXCURSION, lugar, fecha, 
                     (SELECT grado || seccion || turno FROM grado WHERE grado.IdGRADO = excursion.IdGRADO) AS grado
-                FROM excursion ORDER BY fecha
+                FROM excursion
+                ORDER BY date(substr(fecha, 7, 4) || '-' || substr(fecha, 4, 2) || '-' || substr(fecha, 1, 2))
             """)
             excursiones = cursor.fetchall()
 

@@ -1,0 +1,60 @@
+Para instalar y ejecutar esta aplicación en otra PC fuera de Visual Studio, puedes seguir estos pasos:
+
+### 1. **Empaquetar la aplicación como un ejecutable**
+    Utiliza una herramienta como `PyInstaller` para convertir tu script Python en un archivo ejecutable (.exe). Esto permitirá que la aplicación se ejecute sin necesidad de instalar Python en la otra PC.
+
+    - Instala PyInstaller:
+      ```bash
+      pip install pyinstaller
+      ```
+    - Genera el ejecutable:
+      ```bash
+      pyinstaller --onefile --noconsole main.py
+      ```
+      - `--onefile`: Crea un único archivo ejecutable.
+      - `--noconsole`: Oculta la consola al ejecutar la aplicación.
+
+    El ejecutable se generará en la carpeta `dist`.
+
+---
+
+### 2. **Incluir recursos adicionales**
+    Si tu aplicación utiliza recursos externos (como imágenes o bases de datos), asegúrate de incluirlos en el ejecutable o distribuirlos junto con él.
+
+    - Usa el método `get_resource_path` para acceder a los recursos en modo empaquetado.
+    - Copia los recursos necesarios (como `Excursion.db` y las imágenes) en una carpeta junto al ejecutable.
+
+---
+
+### 3. **Configurar la base de datos**
+    - Si la base de datos (`Excursion.db`) no existe en la carpeta `Documents` del usuario, crea un script que la genere automáticamente al iniciar la aplicación.
+    - Asegúrate de que las tablas necesarias se creen si no existen (ya lo haces en tu código con `CREATE TABLE IF NOT EXISTS`).
+
+---
+
+### 4. **Crear un instalador**
+    Para facilitar la instalación en otras PCs, puedes crear un instalador utilizando herramientas como:
+    - [Inno Setup](https://jrsoftware.org/isinfo.php): Permite empaquetar el ejecutable y los recursos en un instalador.
+    - [NSIS](https://nsis.sourceforge.io/Main_Page): Otra herramienta popular para crear instaladores.
+
+---
+
+### 5. **Probar en otra PC**
+    - Copia el instalador o los archivos generados a otra PC.
+    - Asegúrate de que la PC tenga instaladas las dependencias necesarias (como `Visual C++ Redistributable` si usas PyInstaller).
+    - Ejecuta la aplicación y verifica que funcione correctamente.
+
+---
+
+### 6. **Documentar el proceso**
+    Crea un archivo `README.txt` o `README.md` con instrucciones claras para instalar y usar la aplicación. Incluye:
+    - Cómo instalar la aplicación.
+    - Dónde se guardan los datos (por ejemplo, en la carpeta `Documents`).
+    - Requisitos del sistema.
+
+---
+
+### 7. **Opcional: Crear un entorno virtual portátil**
+    Si no deseas usar PyInstaller, puedes crear un entorno virtual con todas las dependencias y copiarlo junto con el script a la otra PC. Sin embargo, esto requiere que Python esté instalado en la PC de destino.
+
+Con estos pasos, tu aplicación estará lista para ser instalada y utilizada en otras PCs.
