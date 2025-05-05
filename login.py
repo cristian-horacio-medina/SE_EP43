@@ -1,82 +1,126 @@
+import os
 import tkinter as tk
 from tkinter import messagebox
 import sqlite3
-import os
+import bcrypt
+from main import FormularioCarga  # Importa el formulario de carga desde main.py
 
-class LoginScreen:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Login")
-        self.master.geometry("300x200")
+DB_PATH = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")  # Ruta de tu base de datos
+print("Ruta de la base de datos:", os.path.abspath(DB_PATH))
+# --- FUNCIONES DE BACKEND ---
 
-        # Etiquetas y campos de entrada
-        tk.Label(master, text="Usuario:").pack(pady=5)
-        self.username_entry = tk.Entry(master)
-        self.username_entry.pack(pady=5)
-
-        tk.Label(master, text="Contraseña:").pack(pady=5)
-        self.password_entry = tk.Entry(master, show="*")
-        self.password_entry.pack(pady=5)
-
-        # Botón de login
-        tk.Button(master, text="Iniciar sesión", command=self.login).pack(pady=10)
-
-        # Crear base de datos si no existe
-        self.create_user_table()
-
-    def create_user_table(self):
-        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
-        conn = sqlite3.connect(db_path)
+def verificar_login(username, password):
+    try:
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            username TEXT UNIQUE,
-                            password TEXT,
-                            role TEXT)''')
-        # Insertar un usuario administrador por defecto si no existe
-        cursor.execute('''INSERT OR IGNORE INTO usuarios (username, password, role)
-                           VALUES ('admin', 'admin123', 'admin')''')
+        cursor.execute("SELECT password FROM usuarios WHERE username = ?", (username,))
+        resultado = cursor.fetchone()
+        conn.close()
+
+        if resultado:
+            hashed_guardado = resultado[0]
+            if bcrypt.checkpw(password.encode('utf-8'), hashed_guardado.encode('utf-8')):
+                return True, username
+        return False
+    except Exception as e:
+        print("Error en verificación:", e)
+        return False, none
+
+def registrar_usuario(username, password):
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO usuarios (username, password) VALUES (?, ?)", (username, hashed.decode('utf-8')))
         conn.commit()
         conn.close()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    except Exception as e:
+        print("Error al registrar usuario:", e)
+        return False
 
-    def login(self):
-        username = self.username_entry.get()
-        password = self.password_entry.get()
+# --- FUNCIONES DE INTERFAZ ---
 
-        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+def login():
+    username = entry_usuario.get()
+    password = entry_contrasena.get()
 
-        # Verificar credenciales
-        cursor.execute("SELECT role FROM usuarios WHERE username = ? AND password = ?", (username, password))
-        result = cursor.fetchone()
-        conn.close()
+    if verificar_login(username, password):
+        messagebox.showinfo("Login exitoso", f"Bienvenido, {username}")
+        root.destroy()  # Cierra la ventana de login
 
-        if result:
-            role = result[0]
-            if role == "admin":
-                messagebox.showinfo("Login exitoso", "Bienvenido, Administrador.")
-                self.master.destroy()
-                import main
-                self.open_main_app(role)
-            elif role == "operador":
-                messagebox.showinfo("Login exitoso", "Bienvenido, Operador.")
-                self.master.destroy()
-                import main
-                self.open_main_app(role)
+        # Crea la nueva ventana con el formulario
+        nueva_ventana = tk.Tk()
+        nueva_ventana.title("Formulario de Carga")
+        nueva_ventana.geometry("960x600")
+        app = FormularioCarga(nueva_ventana)
+        app.pack(expand=True, fill="both")
+        nueva_ventana.mainloop()
+    else:
+        messagebox.showerror("Error", "Usuario o contraseña incorrectos")
+
+def mostrar_ventana_registro():
+    ventana_registro = tk.Toplevel(root)
+    ventana_registro.title("Registrar nuevo usuario")
+    ventana_registro.geometry("300x200")
+
+    tk.Label(ventana_registro, text="Nuevo usuario").pack(pady=5)
+    nuevo_usuario = tk.Entry(ventana_registro)
+    nuevo_usuario.pack()
+
+    tk.Label(ventana_registro, text="Nueva contraseña").pack(pady=5)
+    nueva_contrasena = tk.Entry(ventana_registro, show="*")
+    nueva_contrasena.pack()
+
+    def registrar():
+        username = nuevo_usuario.get()
+        password = nueva_contrasena.get()
+        if username and password:
+            if registrar_usuario(username, password):
+                messagebox.showinfo("Éxito", f"Usuario '{username}' registrado correctamente.")
+                ventana_registro.destroy()
+            else:
+                messagebox.showerror("Error", f"El usuario '{username}' ya existe o hubo un problema.")
         else:
-            messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
+            messagebox.showwarning("Advertencia", "Completa ambos campos.")
 
-    def open_main_app(self, role):
-        app = FormularioCarga(root)
-        if role == "operator":
-            # Deshabilitar funciones específicas para operadores
-            app.guardar_btn.config(state="disabled")
-            app.borrar_btn.config(state="disabled")
-        root.mainloop()
+    tk.Button(ventana_registro, text="Registrar", command=registrar).pack(pady=15)
 
+# --- INTERFAZ PRINCIPAL ---
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = LoginScreen(root)
-    root.mainloop()
+root = tk.Tk()
+root.title("Login - Excursion")
+root.geometry("300x220")
+
+# Etiquetas y campos de entrada
+tk.Label(root, text="Usuario").pack(pady=(20, 5))
+entry_usuario = tk.Entry(root)
+entry_usuario.pack()
+
+tk.Label(root, text="Contraseña").pack(pady=5)
+entry_contrasena = tk.Entry(root, show="*")
+entry_contrasena.pack()
+
+# Botones
+tk.Button(root, text="Ingresar", command=login).pack(pady=(15, 5))
+#tk.Button(root, text="Registrar nuevo usuario", command=mostrar_ventana_registro).pack()
+
+# Botón para registrar usuarios (solo lo activará admin al loguearse)
+boton_registrar = tk.Button(root, text="Registrar nuevo usuario", command=mostrar_ventana_registro)
+boton_registrar.pack()
+
+# Deshabilitar el botón al inicio
+boton_registrar.config(state="disabled")
+
+# Habilitar el botón si el usuario escrito es 'admin'
+def habilitar_si_admin(event):
+    if entry_usuario.get().strip().lower() == "admin":
+        boton_registrar.config(state="normal")
+    else:
+        boton_registrar.config(state="disabled")
+
+entry_usuario.bind("<KeyRelease>", habilitar_si_admin)
+
+root.mainloop()

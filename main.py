@@ -1424,8 +1424,8 @@ class FormularioCarga(tk.Frame):
             "Éxito", f"El PDF fue creado exitosamente como {os.path.basename(nombre_archivo)} en la carpeta Documentos\\Anexos_PDFs.")
         
         
-
-root = tk.Tk()
-root.geometry("960x600")
-app = FormularioCarga(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.geometry("960x600")
+    app = FormularioCarga(root)
+    root.mainloop()
