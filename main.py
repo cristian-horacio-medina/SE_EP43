@@ -672,8 +672,8 @@ class FormularioCarga(tk.Frame):
 
         # Obtener el IdGRADO del combobox_grado
         grado_seleccionado = self.combobox_grado.get()
-        #self.IdGRADO = self.grados.get(grado_seleccionado, None)
-        #messagebox.showinfo("Información", f"El ID del grado seleccionado es: {self.IdGRADO}")
+        self.IdGRADO = self.grados.get(grado_seleccionado, None)
+        messagebox.showinfo("Información", f"El ID del grado seleccionado es: {self.IdGRADO}")
         # Conectar a la base de datos SQLite
         db_path = os.path.join(os.path.expanduser(
             "~"), "Documents", "Excursion.db")
@@ -1129,10 +1129,10 @@ class FormularioCarga(tk.Frame):
         while len(registros_ordenados) > 9:
             registros_a_incluir = registros_ordenados[:18]
             buffer = self.crear_pdf_memoria(
-            registros_a_incluir,
-            fondo_impar,
-            mostrar_encabezado=True,
-            posicion_inicial=posicion_impar
+                registros_a_incluir,
+                fondo_impar,
+                mostrar_encabezado=True,
+                posicion_inicial=posicion_impar
             )
             buffers.append(buffer)
 
@@ -1140,18 +1140,8 @@ class FormularioCarga(tk.Frame):
             registros_ordenados = registros_ordenados[18:]
             archivo_num += 1
 
-        # Generar el formulario impar (9 registros o menos)
-        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []
-        buffer = self.crear_pdf_memoria(
-            registros_a_incluir,
-            fondo_impar,
-            mostrar_encabezado=True,
-            posicion_inicial=posicion_impar
-        )
-        buffers.append(buffer)
-
-        # Generar el formulario par (siempre, incluso si no hay registros restantes)
-        registros_a_incluir = registros_ordenados[9:] if len(registros_ordenados) > 9 else []
+        # Siempre generar el formulario par (9 registros o menos, o vacío)
+        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []  # Puede estar vacío
         buffer = self.crear_pdf_memoria(
             registros_a_incluir,
             fondo_par,
@@ -1166,6 +1156,7 @@ class FormularioCarga(tk.Frame):
         self.combinar_pdfs_memoria(buffers, archivo_salida)
 
         messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
+
 
         
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
