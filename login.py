@@ -56,8 +56,10 @@ def login():
         nueva_ventana.title("Formulario de Carga")
         nueva_ventana.geometry("960x600")
         app = FormularioCarga(nueva_ventana)
-        app.pack(expand=True, fill="both")
-        nueva_ventana.mainloop()
+        app.grid(row=0, column=0, sticky="nsew")
+        nueva_ventana.grid_rowconfigure(0, weight=1)
+        nueva_ventana.grid_columnconfigure(0, weight=1)
+        nueva_ventana.mainloop()  # Inicia el bucle de eventos de la nueva ventana
     else:
         messagebox.showerror("Error", "Usuario o contraseña incorrectos")
 
