@@ -1,7 +1,9 @@
 import tkinter as tk
-from tkinter import messagebox
 import sqlite3
 import os
+from db_utils import get_db_path
+from tkinter import messagebox
+from main import FormularioCarga
 
 class LoginScreen:
     def __init__(self, master):
@@ -25,7 +27,7 @@ class LoginScreen:
         self.create_user_table()
 
     def create_user_table(self):
-        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+        db_path = get_db_path()
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
@@ -43,7 +45,7 @@ class LoginScreen:
         username = self.username_entry.get()
         password = self.password_entry.get()
 
-        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+        db_path = get_db_path()
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
 
@@ -54,26 +56,24 @@ class LoginScreen:
 
         if result:
             role = result[0]
-            if role == "admin":
-                messagebox.showinfo("Login exitoso", "Bienvenido, Administrador.")
-                self.master.destroy()
-                import main
-                self.open_main_app(role)
-            elif role == "operador":
-                messagebox.showinfo("Login exitoso", "Bienvenido, Operador.")
-                self.master.destroy()
-                import main
-                self.open_main_app(role)
+            messagebox.showinfo("Login exitoso", f"Bienvenido, {role.capitalize()}.")
+            self.master.destroy()
+            self.open_main_app(role)
         else:
             messagebox.showerror("Error", "Usuario o contraseña incorrectos.")
 
+
     def open_main_app(self, role):
-        app = FormularioCarga(root)
+        nuevo_root = tk.Tk()  # Nueva ventana raíz
+        app = FormularioCarga(nuevo_root)
+
         if role == "operator":
             # Deshabilitar funciones específicas para operadores
             app.guardar_btn.config(state="disabled")
             app.borrar_btn.config(state="disabled")
-        root.mainloop()
+
+        nuevo_root.mainloop()
+
 
 
 if __name__ == "__main__":

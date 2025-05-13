@@ -9,6 +9,8 @@ from io import BytesIO
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PyPDF4 import PdfFileWriter, PdfFileReader
+from db_utils import get_db_path
+
 
 # Establecer la localización a español (España)
 locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')  # Para sistemas UNIX
@@ -102,20 +104,21 @@ class FormularioCarga(tk.Frame):
         # Agregar una etiqueta y un campo de entrada para 'Documento'
         tk.Label(tabulador, text="Documento:").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
-        self.documento_entry = tk.Entry(tabulador, width=20)
+        self.documento_entry = tk.Entry(tabulador, width=9)
         self.documento_entry.grid(row=3, column=1, sticky='w', padx=5, pady=5)
-        
+        self.documento_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.documento_entry, 9, tabulador))
         #Variable para el rol seleccionado
         self.rol_seleccionado = tk.StringVar(value="Estudiante")
 
         # Radiobuttons para seleccionar rol
+        self.rol_seleccionado.set("Estudiante")  # Selecciona "Estudiante" por defecto
         tk.Radiobutton(tabulador, text="Estudiante", variable=self.rol_seleccionado,
-                       value="Estudiante").grid(row=4, column=0)
-
+                   value="Estudiante").grid(row=4, column=0)
+        
         tk.Radiobutton(tabulador, text="Docente", variable=self.rol_seleccionado,
-                       value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
+                   value="Docente", command=self.mostrar_combobox).grid(row=4, column=1)
         tk.Radiobutton(tabulador, text="No Docente", variable=self.rol_seleccionado,
-                       value="No Docente").grid(row=4, column=2) 
+                   value="No Docente").grid(row=4, column=2) 
         tk.Label(tabulador, text="Seleccione una excursión").grid(row=4, column=3, sticky='ew', padx=5, pady=5)
 
         # Crear el Combobox para "Responsable" o "Reemplazante"
@@ -141,7 +144,7 @@ class FormularioCarga(tk.Frame):
 
         # Botón para nueva excursión
         self.agregar_excursion_btn = tk.Button(
-            tabulador, text="Nueva excursión", command=self.guardar_y_reiniciar)
+            tabulador, text="Nueva excursión", command=self.nueva_excursion)
         self.agregar_excursion_btn.grid(row=0, column=3, sticky='ew')
         self.agregar_excursion_btn.config(bg="green", fg="white", font=("Arial", 10, "bold"))
         
@@ -162,6 +165,7 @@ class FormularioCarga(tk.Frame):
         self.mostrar_button = tk.Button(
             tabulador, text="Modificar seleccionado", command=self.mostrar_o_actualizar, bg="blue", fg="white", font=("Arial", 10, "bold"))
         self.mostrar_button.grid(row=6, column=2, sticky='ew')
+        self.mostrar_button.config(state="normal")  # Deshabilitar el botón
         
         # Botón para modificar grado
         self.modificar_grado_button = tk.Button(
@@ -249,7 +253,7 @@ class FormularioCarga(tk.Frame):
             conexion = sqlite3.connect(db_path)
             cursor = conexion.cursor()
             cursor.execute(
-                "SELECT idgrado, grado || ' ' || seccion || ' ' || turno AS grado_completo FROM grado;")
+                "SELECT idgrado, grado||seccion||turno AS grado_completo FROM grado;")
             resultados = cursor.fetchall()
 
             self.grados = {fila[1]: fila[0]
@@ -466,7 +470,7 @@ class FormularioCarga(tk.Frame):
         else:
             messagebox.showwarning(
                 "Advertencia", "Por favor, complete todos los campos.")
-
+        self.rol_seleccionado.set("Estudiante")  # Selecciona "Estudiante" por defecto
     def limpiar(self):
         # Limpiar los campos de entrada
         self.apellido_entry.delete(0, tk.END)
@@ -494,7 +498,7 @@ class FormularioCarga(tk.Frame):
             self.tree.delete(selected_item)
 
             # Delete from database
-            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+            db_path = get_db_path()
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             try:
@@ -510,9 +514,7 @@ class FormularioCarga(tk.Frame):
         else:
             messagebox.showwarning("Advertencia", "No se ha seleccionado ningún elemento para borrar.")
     def mostrar_o_actualizar(self):
-        """
-        Handles the modification or update of a selected item in the Treeview.
-        """
+        
         item_id = self.tree.selection()
         if item_id:
             if self.accion_actual == "mostrar":
@@ -629,7 +631,7 @@ class FormularioCarga(tk.Frame):
 
         # Actualizar el grado en la base de datos
         try:
-            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+            db_path = get_db_path()
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("UPDATE excursion SET IdGRADO = ? WHERE IdEXCURSION = ?", (nuevo_IdGRADO, self.IdEXCURSION))
@@ -672,7 +674,12 @@ class FormularioCarga(tk.Frame):
 
         # Obtener el IdGRADO del combobox_grado
         grado_seleccionado = self.combobox_grado.get()
-        #self.IdGRADO = self.grados.get(grado_seleccionado, None)
+        #messagebox.showinfo("Información", f"El grado seleccionado es: {grado_seleccionado}")
+        if grado_seleccionado in self.grados:
+            self.IdGRADO = self.grados[grado_seleccionado]
+        else:
+            messagebox.showwarning("Advertencia", "Por favor, selecciona un grado válido.")
+            return
         #messagebox.showinfo("Información", f"El ID del grado seleccionado es: {self.IdGRADO}")
         # Conectar a la base de datos SQLite
         db_path = os.path.join(os.path.expanduser(
@@ -792,7 +799,23 @@ class FormularioCarga(tk.Frame):
                 "Error", f"No se pudo guardar en la base de datos: {e}")
         finally:
             conn.close()
+    def nueva_excursion(self):
+        # Limpiar todos los campos del formulario
+        self.reiniciar_formulario()
 
+        # Restablecer las variables de instancia
+        self.IdEXCURSION = None  # Resetear el ID de la excursión
+        self.IdGRADO = None  # Resetear el ID del grado
+
+        # Habilitar el combobox de grados para permitir la selección
+        self.combobox_grado.config(state="normal")  # Habilitar el combobox para el grado
+        self.combobox_grado.set("")  # Opcional: Limpiar el valor seleccionado del combobox
+
+        # Colocar el foco en el primer campo (por ejemplo, el lugar de la excursión)
+        self.lugar_entry.focus()
+
+
+        messagebox.showinfo("Éxito", "Excursión guardada correctamente.")
     def eliminar_excursion(self):
         # Verificar si hay una excursión seleccionada
         excursion_seleccionada = self.combobox_excursion.get()
@@ -811,7 +834,7 @@ class FormularioCarga(tk.Frame):
 
         # Eliminar la excursión de la base de datos
         try:
-            db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+            db_path = get_db_path()
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM excursion WHERE IdEXCURSION = ?", (IdEXCURSION,))
@@ -839,10 +862,10 @@ class FormularioCarga(tk.Frame):
             messagebox.showerror("Error", f"No se pudo actualizar la lista de excursiones: {e}")
 
 
-    def guardar_y_reiniciar(self):
-        self.guardar_sqlite()
-        self.reiniciar_formulario()
-        self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
+    # def guardar_y_reiniciar(self):
+    #     self.guardar_sqlite()
+    #     self.reiniciar_formulario()
+    #     self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
 
     def cargar_desde_sqlite(self, event=None):
         # Verificar si hay una excursión seleccionada
@@ -968,6 +991,31 @@ class FormularioCarga(tk.Frame):
         finally:
             if conn:
                 conn.close()
+    def reiniciar_formulario(self):
+        self.combobox_grado.focus()
+        self.combobox_grado.state(["!disabled"])
+        self.combobox_grado.set("")  # Limpiar el combobox de grados
+        self.localidad_entry.delete(0, tk.END)
+        self.lugar_entry.delete(0, tk.END)
+        self.fecha_entry.delete(0, tk.END)
+        self.combobox_excursion.set("")  # Limpiar el combobox de excursiones   
+        self.proyecto_entry.delete(0, tk.END)
+        self.fechasalida_entry.delete(0, tk.END)
+        self.horasalida_entry.delete(0, tk.END)
+        self.fecharegreso_entry.delete(0, tk.END)
+        self.horaregreso_entry.delete(0, tk.END)
+        self.lugarestadia_entry.delete(0, tk.END)
+        self.datosacompañantes_entry.delete(0, tk.END)
+        self.empresacontratada_entry.delete(0, tk.END)
+        self.datosinfraestructura_entry.delete(0, tk.END)
+        self.hospitales_entry.delete(0, tk.END)
+        self.otrosdatos_entry.delete(0, tk.END)
+                    
+        # Eliminar todos los registros del Treeview
+        self.tree.delete(*self.tree.get_children())
+        self.contador = 1  # Reiniciar contador
+
+    # Método para obtener el nombre del mes en letras
 
     def get_resource_path(self, relative_path):
         # Resuelve la ruta de los recursos en modo empaquetado o en desarrollo
@@ -1067,7 +1115,7 @@ class FormularioCarga(tk.Frame):
         cursor.close()
         conexion.close()
 
-    def crear_pdf_memoria(self, registros, imagen_fondo, mostrar_encabezado, posicion_inicial):
+    def crear_pdf_memoria(self, registros, imagen_fondo, mostrar_encabezado, posicion_inicial, max_por_pagina):
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         c.drawImage(imagen_fondo, 0, 0,
@@ -1075,7 +1123,6 @@ class FormularioCarga(tk.Frame):
 
         y = posicion_inicial
 
-        # Mostrar encabezado solo si mostrar_encabezado es True
         if mostrar_encabezado:
             Institucion_educativa = "ESCUELA PRIMARIA"
             Nº = "43"
@@ -1090,11 +1137,9 @@ class FormularioCarga(tk.Frame):
             c.drawString(453.6, y, self.fecha_entry.get())
             y -= 80
 
-        # Ajustar la fuente para la tabla
         c.setFont("Helvetica", 7)
 
         for i, registro in enumerate(registros):
-            # Dibujar registros en la página
             c.drawString(90, y, str(registro['Numero']))
             c.drawString(115, y, str(registro['Apellido_Nombre']))
             c.drawString(285, y, str(registro['DNI']))
@@ -1103,17 +1148,16 @@ class FormularioCarga(tk.Frame):
             c.drawString(460, y, str(registro['NoDocente']))
             y -= 23
 
-            # Si se alcanza el límite de 18 registros por página, crear nueva página
-            if (i + 1) % 18 == 0 and (i + 1) < len(registros):
+            if (i + 1) % max_por_pagina == 0 and (i + 1) < len(registros):
                 c.showPage()
-                c.drawImage(
-                    imagen_fondo, 0, 0, width=A4[0], height=A4[1], preserveAspectRatio=True, anchor='c')
+                c.drawImage(imagen_fondo, 0, 0,
+                            width=A4[0], height=A4[1], preserveAspectRatio=True, anchor='c')
                 y = posicion_inicial
 
         c.save()
-        # Poner el buffer en la posición inicial para su lectura posterior
         buffer.seek(0)
         return buffer
+
 
     def generar_pdfs_en_memoria(self, registros_ordenados):
         fondo_impar = self.get_resource_path("resources/Anexo_V_1.png")
@@ -1123,49 +1167,80 @@ class FormularioCarga(tk.Frame):
         posicion_par = 686
 
         buffers = []
-        archivo_num = 1
 
-        # Generar formularios de 18 registros mientras haya más de 9 registros
-        while len(registros_ordenados) > 9:
-            registros_a_incluir = registros_ordenados[:18]
+        if not registros_ordenados:
+            # Caso 0 registros: hoja impar vacía + hoja par vacía
             buffer = self.crear_pdf_memoria(
-            registros_a_incluir,
-            fondo_impar,
-            mostrar_encabezado=True,
-            posicion_inicial=posicion_impar
+                [],
+                fondo_impar,
+                mostrar_encabezado=True,
+                posicion_inicial=posicion_impar,
+                max_por_pagina=18
             )
             buffers.append(buffer)
 
-            # Remover los registros procesados
-            registros_ordenados = registros_ordenados[18:]
-            archivo_num += 1
+            buffer = self.crear_pdf_memoria(
+                [],
+                fondo_par,
+                mostrar_encabezado=False,
+                posicion_inicial=posicion_par,
+                max_por_pagina=9
+            )
+            buffers.append(buffer)
 
-        # Generar el formulario impar (9 registros o menos)
-        registros_a_incluir = registros_ordenados[:9] if registros_ordenados else []
-        buffer = self.crear_pdf_memoria(
-            registros_a_incluir,
-            fondo_impar,
-            mostrar_encabezado=True,
-            posicion_inicial=posicion_impar
-        )
-        buffers.append(buffer)
+        elif len(registros_ordenados) <= 18:
+            # Todos los registros en una hoja impar
+            buffer = self.crear_pdf_memoria(
+                registros_ordenados,
+                fondo_impar,
+                mostrar_encabezado=True,
+                posicion_inicial=posicion_impar,
+                max_por_pagina=18
+            )
+            buffers.append(buffer)
 
-        # Generar el formulario par (siempre, incluso si no hay registros restantes)
-        registros_a_incluir = registros_ordenados[9:] if len(registros_ordenados) > 9 else []
-        buffer = self.crear_pdf_memoria(
-            registros_a_incluir,
-            fondo_par,
-            mostrar_encabezado=False,
-            posicion_inicial=posicion_par
-        )
-        buffers.append(buffer)
+            # Hoja par vacía
+            buffer = self.crear_pdf_memoria(
+                [],
+                fondo_par,
+                mostrar_encabezado=False,
+                posicion_inicial=posicion_par,
+                max_por_pagina=9
+            )
+            buffers.append(buffer)
 
-        # Combinar los PDFs en memoria y guardar en un único archivo
+        else:
+            # Generar hojas impares de 18 registros
+            while len(registros_ordenados) > 9:
+                registros_a_incluir = registros_ordenados[:18]
+                buffer = self.crear_pdf_memoria(
+                    registros_a_incluir,
+                    fondo_impar,
+                    mostrar_encabezado=True,
+                    posicion_inicial=posicion_impar,
+                    max_por_pagina=18
+                )
+                buffers.append(buffer)
+                registros_ordenados = registros_ordenados[18:]
+
+            # Los últimos registros (1 a 9) van en hoja par
+            buffer = self.crear_pdf_memoria(
+                registros_ordenados,
+                fondo_par,
+                mostrar_encabezado=False,
+                posicion_inicial=posicion_par,
+                max_por_pagina=9
+            )
+            buffers.append(buffer)
+
+        # Combinar y guardar
         archivo_salida = os.path.join(
-            os.environ["USERPROFILE"], "Documents", "Anexos_PDFs", "Anexo_V.pdf")
+            os.environ["USERPROFILE"], "Documents", "Anexos_PDFs", "Anexo_V.pdf"
+        )
         self.combinar_pdfs_memoria(buffers, archivo_salida)
 
         messagebox.showinfo("Éxito", "El PDF combinado fue creado exitosamente en la carpeta Documentos\\Anexos_PDFs.")
+
 
         
     def combinar_pdfs_memoria(self, buffers, archivo_salida):
@@ -1197,31 +1272,7 @@ class FormularioCarga(tk.Frame):
         messagebox.showinfo(
             "Éxito", f"El PDF combinado fue creado exitosamente como {nombre_archivo} en la carpeta Documentos\\Anexos_PDFs.")
 
-    def reiniciar_formulario(self):
-        self.combobox_grado.focus()
-        self.combobox_grado.state(["!disabled"])
-        self.combobox_grado.set("")  # Limpiar el combobox de grados
-        self.localidad_entry.delete(0, tk.END)
-        self.lugar_entry.delete(0, tk.END)
-        self.fecha_entry.delete(0, tk.END)
-        self.proyecto_entry.delete(0, tk.END)
-        self.fechasalida_entry.delete(0, tk.END)
-        self.horasalida_entry.delete(0, tk.END)
-        self.fecharegreso_entry.delete(0, tk.END)
-        self.horaregreso_entry.delete(0, tk.END)
-        self.lugarestadia_entry.delete(0, tk.END)
-        self.datosacompañantes_entry.delete(0, tk.END)
-        self.empresacontratada_entry.delete(0, tk.END)
-        self.datosinfraestructura_entry.delete(0, tk.END)
-        self.hospitales_entry.delete(0, tk.END)
-        self.otrosdatos_entry.delete(0, tk.END)
-                    
-        # Eliminar todos los registros del Treeview
-        self.tree.delete(*self.tree.get_children())
-        self.contador = 1  # Reiniciar contador
-
-    # Método para obtener el nombre del mes en letras
-
+    
     def obtener_mes_letras(self, fecha_str):
         fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
         # Obtener el día, mes y día de la semana en formato texto
@@ -1293,6 +1344,8 @@ class FormularioCarga(tk.Frame):
         # Combinar todos los PDFs en uno solo
         self.combinar_pdfs_en_memoria(pdf_buffers)
 
+    
+        
     def crear_pdf_por_alumno_en_memoria(self, registro):
         # Crear un objeto BytesIO para el PDF en memoria
         buffer = BytesIO()
@@ -1409,13 +1462,14 @@ class FormularioCarga(tk.Frame):
         lugar = self.lugar_entry.get().replace(" ", "_")
         # Reemplazar caracteres de fecha si es necesario
         fecha = self.fecha_entry.get().replace("/", "-")
+        grado= self.combobox_grado.get()
 
         pdf_path = os.path.join(os.path.expanduser(
             "~"), "Documents", "Anexos_PDFs")  # Ruta de la carpeta PDFs
 
         # Crear un nombre de archivo dinámico
         nombre_archivo = os.path.join(
-            pdf_path, f"Anexos_VI_agrupados_{lugar}_{fecha}.pdf")
+            pdf_path, f"Anexos_VI_agrupados_{grado}_{lugar}_{fecha}.pdf")
 
         with open(nombre_archivo, "wb") as f:
             writer.write(f)
@@ -1424,8 +1478,8 @@ class FormularioCarga(tk.Frame):
             "Éxito", f"El PDF fue creado exitosamente como {os.path.basename(nombre_archivo)} en la carpeta Documentos\\Anexos_PDFs.")
         
         
-
-root = tk.Tk()
-root.geometry("960x600")
-app = FormularioCarga(root)
-root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.geometry("960x600")
+    app = FormularioCarga(root)
+    root.mainloop()
