@@ -1368,7 +1368,7 @@ class FormularioCarga(tk.Frame):
         numero_establecimiento = "Nº 43"
         distrito = "ESTEBAN ECHEVERRÍA"
         lugar = self.lugar_entry.get()  # Lugar tomado directamente del TextBox
-
+        localidad = self.localidad_entry.get()
         proyecto = self.proyecto_entry.get()
         fecha_salida = self.fechasalida_entry.get()
         hora_salida = self.horasalida_entry.get()
@@ -1399,7 +1399,7 @@ class FormularioCarga(tk.Frame):
         c.drawString(167.24, 162, establecimiento)
         c.drawString(385.51, 162, numero_establecimiento)
         c.drawString(99.21, 145, distrito)
-        c.drawString(99.21, 105, lugar)
+        c.drawString(99.21, 105, localidad)
         c.drawString(453.6, 105, f"{dia}")
         c.drawString(140, 86, f"{mes}")
         # Datos del alumno
