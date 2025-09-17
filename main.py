@@ -151,9 +151,14 @@ class FormularioCarga(tk.Frame):
         #Botón eliminar excursión
         self.eliminar_excursion_btn = tk.Button(
             tabulador, text="Eliminar excursión", command=self.eliminar_excursion)
-        self.eliminar_excursion_btn.grid(row=2, column=3, sticky='ew')
+        self.eliminar_excursion_btn.grid(row=3, column=3, sticky='ew')
         self.eliminar_excursion_btn.config(bg="red", fg="white", font=("Arial", 10, "bold"))
-
+        #Botón duplicar excursión
+        self.duplicar_excursion_btn = tk.Button(
+            tabulador, text="Duplicar excursión", command=lambda: self.duplicar_excursion(self.IdEXCURSION))
+        self.duplicar_excursion_btn.grid(row=1, column=3, sticky='ew')
+        self.duplicar_excursion_btn.config(bg="sky blue", fg="white", font=("Arial", 10, "bold"))
+        
         # Botón para agregar registro
         self.agregar_btn = tk.Button(
             tabulador, text="Agregar", command=self.agregar, bg="green", fg="white", font=("Arial", 10, "bold"))
@@ -418,6 +423,63 @@ class FormularioCarga(tk.Frame):
     def mostrar_advertencia(self, texto):
 
         messagebox.showwarning("Advertencia", texto)
+        
+    def duplicar_excursion(self, id_excursion_original):
+        db_path = os.path.join(os.path.expanduser("~"), "Documents", "Excursion.db")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        try:
+            # 1. Obtener datos de la excursión original
+            cursor.execute("SELECT lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, \
+                            fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada, \
+                            datos_infraestructura, hospitales, otros_datos, IdGRADO \
+                            FROM excursion WHERE IdEXCURSION = ?", (id_excursion_original,))
+            datos_excursion = cursor.fetchone()
+
+            if not datos_excursion:
+                messagebox.showerror("Error", "La excursión original no existe")
+                return
+
+            # 2. Insertar nueva excursión (idéntica a la original, salvo que podés cambiar fecha/lugar si querés)
+            cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
+                                fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
+                                datos_infraestructura, hospitales, otros_datos, IdGRADO)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', datos_excursion)
+
+            nuevo_id_excursion = cursor.lastrowid
+
+            # 3. Copiar alumnos de la excursión original
+            cursor.execute("SELECT apellido, nombre, DNI, ALUMNO, IdGRADO FROM alumnos WHERE IdEXCURSION = ?", 
+                           (id_excursion_original,))
+            alumnos = cursor.fetchall()
+
+            for alumno in alumnos:
+                cursor.execute('''INSERT INTO alumnos (IdEXCURSION, apellido, nombre, DNI, ALUMNO, IdGRADO)
+                                  VALUES (?, ?, ?, ?, ?, ?)''',
+                               (nuevo_id_excursion, alumno[0], alumno[1], alumno[2], alumno[3], alumno[4]))
+
+            # 4. Copiar acompañantes de la excursión original
+            cursor.execute("SELECT apellido, nombre, DNI, DOCENTE, NO_DOCENTE, IdGRADO FROM acompanantes WHERE IdEXCURSION = ?", 
+                           (id_excursion_original,))
+            acompanantes = cursor.fetchall()
+
+            for acomp in acompanantes:
+                cursor.execute('''INSERT INTO acompanantes (IdEXCURSION, apellido, nombre, DNI, DOCENTE, NO_DOCENTE, IdGRADO)
+                                  VALUES (?, ?, ?, ?, ?, ?, ?)''',
+                               (nuevo_id_excursion, acomp[0], acomp[1], acomp[2], acomp[3], acomp[4], acomp[5]))
+
+            conn.commit()
+            messagebox.showinfo("Éxito", f"Excursión duplicada con Id {nuevo_id_excursion}")
+            self.actualizar_lista_excursiones()
+
+        except Exception as e:
+            conn.rollback()
+            messagebox.showerror("Error", f"No se pudo duplicar la excursión: {e}")
+        finally:
+            conn.close()
+    
+    
 
     def limitar_caracteres(self, entry, limite, tabulador):
         texto = entry.get()
