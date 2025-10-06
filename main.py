@@ -10,6 +10,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from PyPDF4 import PdfFileWriter, PdfFileReader
 from db_utils import get_db_path
+from db_utils import get_resource_path
 
 
 # Establecer la localización a español (España)
@@ -89,17 +90,17 @@ class FormularioCarga(tk.Frame):
         self.localidad_entry.grid(row=1, column=2, sticky='e', padx=(0, 5), pady=5)
         self.localidad_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.localidad_entry, 33, tabulador))
 
-        # Agregar una etiqueta y un campo de entrada para 'Apellido'
-        tk.Label(tabulador, text="Apellido:").grid(
-            row=2, column=0, sticky='w', padx=5, pady=2)
+        # Apellido
+        tk.Label(tabulador, text="Apellido:").grid(row=2, column=0, sticky='w', padx=5, pady=2)
         self.apellido_entry = tk.Entry(tabulador, width=40)
-        self.apellido_entry.grid(row=2, column=1, sticky='w', padx=5, pady=2)
+        self.apellido_entry.grid(row=2, column=0, sticky='w', padx=5, pady=2)
+        self.apellido_entry.bind("<KeyRelease>", self.convertir_mayusculas)
 
-        # Agregar una etiqueta y un campo de entrada para 'Nombre'
-        tk.Label(tabulador, text="Nombre:").grid(
-            row=2, column=1, sticky='e', padx=5, pady=2)
+        # Nombre
+        tk.Label(tabulador, text="Nombre:").grid(row=2, column=2, sticky='e', padx=5, pady=2)
         self.nombre_entry = tk.Entry(tabulador, width=40)
-        self.nombre_entry.grid(row=2, column=2, sticky='w', padx=5, pady=2)
+        self.nombre_entry.grid(row=2, column=1, sticky='e', padx=5, pady=2)
+        self.nombre_entry.bind("<KeyRelease>", self.convertir_mayusculas)
 
         # Agregar una etiqueta y un campo de entrada para 'Documento'
         tk.Label(tabulador, text="Documento:").grid(
@@ -185,6 +186,10 @@ class FormularioCarga(tk.Frame):
         self.borrar_btn.config(fg="red", font=("Arial", 10, "bold"), highlightbackground="red", highlightthickness=2)
 
         self.guardar_btn = tk.Button(
+            tabulador, text="PLANILLA PARA MAESTRAS", command=self.imprimir_pdf)
+        self.guardar_btn.grid(row=9, column=0, sticky='ew')
+
+        self.guardar_btn = tk.Button(
             tabulador, text="Guardar excursión", command=self.guardar_sqlite)
         self.guardar_btn.grid(row=9, column=1, sticky='ew')
 
@@ -200,14 +205,14 @@ class FormularioCarga(tk.Frame):
         self.generar_pdfs_btn.grid(row=9, column=3, sticky='ew')
 
         self.salir_btn = tk.Button(tabulador, text="Salir", command=self.confirmar_salida)
-        self.salir_btn.grid(row=10, column=1, columnspan=2, sticky='ew')
+        self.salir_btn.grid(row=11, column=0, columnspan=4, sticky='ew')
 
     
 
         # Botón para abrir la carpeta donde se guardó el PDF
         abrir_carpeta_btn = tk.Button(
             tabulador, text="Abrir carpeta con Anexos", command=lambda: os.startfile(os.path.join(os.path.expanduser("~"), "Documents", "Anexos_PDFs")))
-        abrir_carpeta_btn.grid(row=10, column=3, sticky='ew')
+        abrir_carpeta_btn.grid(row=10, column=2, columnspan=2, sticky='ew')
 
 
         tabulador.grid_rowconfigure(6, weight=1)  # Fila del Treeview
@@ -242,6 +247,32 @@ class FormularioCarga(tk.Frame):
         self.tree.grid(row=8, column=0, columnspan=4, sticky='nsew')
         tree_scroll.grid(row=8, column=4, sticky='ns')
 
+    def convertir_mayusculas(self, event):
+        widget = event.widget
+        texto = widget.get()
+        widget.delete(0, tk.END)
+        widget.insert(0, texto.upper())
+    
+
+    def get_resource_path(relative_path):
+        """Devuelve la ruta a recursos, en desarrollo o empaquetado."""
+        try:
+            base_path = sys._MEIPASS  # carpeta temporal de PyInstaller
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
+
+    def imprimir_pdf(self):
+        try:
+           archivo = get_resource_path(os.path.join("resources", "planilla.pdf"))
+           if not os.path.exists(archivo):
+            messagebox.showerror("Error", f"No se encontró el archivo:\n{archivo}")
+            return
+           os.startfile(archivo)  # Abre con el visor predeterminado (Edge/Adobe/etc.)
+        except Exception as e:
+            messagebox.showerror("Error al abrir PDF", str(e))
+        
+    
     def confirmar_salida(self):
         if messagebox.askyesno("Confirmación", "¿Desea guardar los cambios antes de salir?"):
             self.guardar_sqlite()
