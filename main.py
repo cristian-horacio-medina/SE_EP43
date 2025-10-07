@@ -63,18 +63,26 @@ class FormularioCarga(tk.Frame):
         tk.Label(tabulador, text="Grado:").grid(
             row=0, column=0, sticky='w', padx=5, pady=5)
         self.combobox_grado = ttk.Combobox(
-            tabulador, state="readonly", width=10)
-        self.combobox_grado.grid(row=0, column=1, sticky="w", padx=5, pady=5)
+            tabulador, state="readonly", width=6)
+        self.combobox_grado.grid(row=0, column=1, sticky="w", padx=3, pady=3)
         
         
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
         tk.Label(tabulador, text="Fecha de salida:").grid(
-            row=0, column=1, sticky='e', padx=5, pady=5)
-        self.fecha_entry = tk.Entry(tabulador, width=15)
-        self.fecha_entry.grid(row=0, column=2, sticky='w', padx=5, pady=5)
-
+            row=0, column=1, sticky='e', padx=100, pady=5)
+        self.fecha_entry = tk.Entry(tabulador, width=10)
+        self.fecha_entry.grid(row=0, column=1, sticky='e', padx=5, pady=5)
         # Añadido: Evento para formatear la fecha
         self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
+        
+        # Agregar una etiqueta y un campo de entrada para 'Fecha'
+        tk.Label(tabulador, text="Fecha alternativa:").grid(
+            row=0, column=2, sticky='e', padx=80, pady=5)
+        self.fechaalt_entry = tk.Entry(tabulador, width=10)
+        self.fechaalt_entry.grid(row=0, column=2, sticky='e', padx=15, pady=5)
+        # Añadido: Evento para formatear la fecha
+        self.fechaalt_entry.bind("<KeyRelease>", self.formatear_fechaalt)
+        
         
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
         tk.Label(tabulador, text="Lugar:").grid(
@@ -264,11 +272,11 @@ class FormularioCarga(tk.Frame):
 
     def imprimir_pdf(self):
         try:
-           archivo = get_resource_path(os.path.join("resources", "planilla.pdf"))
-           if not os.path.exists(archivo):
-            messagebox.showerror("Error", f"No se encontró el archivo:\n{archivo}")
-            return
-           os.startfile(archivo)  # Abre con el visor predeterminado (Edge/Adobe/etc.)
+            archivo = get_resource_path(os.path.join("resources", "planilla.pdf"))
+            if not os.path.exists(archivo):
+                messagebox.showerror("Error", f"No se encontró el archivo:\n{archivo}")
+                return
+            os.startfile(archivo)  # Abre con el visor predeterminado (Edge/Adobe/etc.)
         except Exception as e:
             messagebox.showerror("Error al abrir PDF", str(e))
         
@@ -527,6 +535,15 @@ class FormularioCarga(tk.Frame):
             fecha = fecha[:5] + "/" + fecha[5:]
         self.fecha_entry.delete(0, tk.END)
         self.fecha_entry.insert(0, fecha)
+
+    def formatear_fechaalt(self, event):  # Nuevo método para formatear la fecha
+        fechaalt = self.fechaalt_entry.get().replace("/", "")
+        if len(fechaalt) >= 2:
+            fechaalt = fechaalt[:2] + "/" + fechaalt[2:]
+        if len(fechaalt) >= 5:
+            fechaalt = fechaalt[:5] + "/" + fechaalt[5:]
+        self.fechaalt_entry.delete(0, tk.END)
+        self.fechaalt_entry.insert(0, fechaalt)
 
     def agregar(self):
         apellido = self.apellido_entry.get()
