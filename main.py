@@ -78,14 +78,14 @@ class FormularioCarga(tk.Frame):
         
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
         tk.Label(tabulador, text="Lugar:").grid(
-            row=1, column=0, sticky='w', padx=5, pady=5)
+            row=1, column=0, sticky='w', padx=5, pady=3)
         self.lugar_entry = tk.Entry(tabulador, width=33)
         self.lugar_entry.grid(row=1, column=1, sticky='w', padx=5, pady=5)
         self.lugar_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.lugar_entry, 33, tabulador))
 
         # Agregar una etiqueta y un campo de entrada para 'Localidad'
         tk.Label(tabulador, text="Localidad:").grid(
-            row=1, column=2, sticky='w', padx=(5, 0), pady=5)
+            row=1, column=2, sticky='w', padx=(5,0), pady=5)
         self.localidad_entry = tk.Entry(tabulador, width=23)
         self.localidad_entry.grid(row=1, column=2, sticky='e', padx=(0, 5), pady=5)
         self.localidad_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(self.localidad_entry, 33, tabulador))
@@ -93,13 +93,13 @@ class FormularioCarga(tk.Frame):
         # Apellido
         tk.Label(tabulador, text="Apellido:").grid(row=2, column=0, sticky='w', padx=5, pady=2)
         self.apellido_entry = tk.Entry(tabulador, width=40)
-        self.apellido_entry.grid(row=2, column=0, sticky='w', padx=5, pady=2)
+        self.apellido_entry.grid(row=2, column=1, sticky='w', padx=5, pady=2)
         self.apellido_entry.bind("<KeyRelease>", self.convertir_mayusculas)
 
         # Nombre
-        tk.Label(tabulador, text="Nombre:").grid(row=2, column=2, sticky='e', padx=5, pady=2)
+        tk.Label(tabulador, text="Nombre:").grid(row=2, column=1, sticky='e', padx=5, pady=2)
         self.nombre_entry = tk.Entry(tabulador, width=40)
-        self.nombre_entry.grid(row=2, column=1, sticky='e', padx=5, pady=2)
+        self.nombre_entry.grid(row=2, column=2,sticky='e', padx=5, pady=2)
         self.nombre_entry.bind("<KeyRelease>", self.convertir_mayusculas)
 
         # Agregar una etiqueta y un campo de entrada para 'Documento'
