@@ -389,8 +389,11 @@ class FormularioCarga(tk.Frame):
         # Fecha de regreso
         tk.Label(tabulador, text="Fecha de regreso:").grid(
             row=2, column=2, sticky='e', padx=2, pady=5)
-        tk.Label(tabulador, textvariable=self.fecha_var).grid( 
-            row=2, column=3, sticky='w', padx=2, pady=5)
+        self.fecharegreso_entry = tk.Entry(tabulador, width=8)
+        self.fecharegreso_entry.grid(
+            row=2, column=3, sticky='w', padx=2, pady=2)
+        # Añadido: Evento para formatear la fecha
+        #self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
         
         # Hora de regreso
         tk.Label(tabulador, text="Hora de regreso:").grid(
@@ -468,7 +471,7 @@ class FormularioCarga(tk.Frame):
         try:
             # 1. Obtener datos de la excursión original
             cursor.execute("SELECT lugar, localidad, fecha, nombre_proyecto, hora_salida, \
-                             hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada, \
+                             fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada, \
                             datos_infraestructura, hospitales, otros_datos, IdGRADO \
                             FROM excursion WHERE IdEXCURSION = ?", (id_excursion_original,))
             datos_excursion = cursor.fetchone()
@@ -479,9 +482,9 @@ class FormularioCarga(tk.Frame):
 
             # 2. Insertar nueva excursión (idéntica a la original, salvo que podés cambiar fecha/lugar si querés)
             cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, hora_salida,
-                                hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
+                                fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, IdGRADO)
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', datos_excursion)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', datos_excursion)
 
             nuevo_id_excursion = cursor.lastrowid
 
@@ -772,7 +775,7 @@ class FormularioCarga(tk.Frame):
         #fecha_salida = self.fechasalida_entry.get()
         hora_salida = self.horasalida_entry.get()
         lugar_regreso = self.lugarderegreso_entry.get()
-        #fecha_regreso = self.fecharegreso_entry.get()
+        fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
         datos_acompanantes = self.datosacompañantes_entry.get()
@@ -805,6 +808,7 @@ class FormularioCarga(tk.Frame):
                                 fecha TEXT,
                                 nombre_proyecto TEXT,
                                 hora_salida TEXT,
+                                fecha_regreso TEXT,
                                 hora_regreso TEXT,
                                 lugar_estadia TEXT,
                                 datos_acompanantes TEXT,
@@ -845,19 +849,19 @@ class FormularioCarga(tk.Frame):
             if self.IdEXCURSION:
                 # Actualizar los datos en la tabla excursion
                 cursor.execute('''UPDATE excursion SET lugar = ?, localidad = ?, fecha = ?, nombre_proyecto = ?, lugar_salida = ?, hora_salida = ?,
-                                  lugar_regreso = ?,  hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
+                                  fecha_regreso = ?, lugar_regreso = ?,  hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
                                     datos_infraestructura = ?, hospitales = ?, otros_datos = ?, IdGRADO = ?
                                     WHERE IdEXCURSION = ?''',
-                               (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida, lugar_regreso,
+                               (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida, fecha_regreso, lugar_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO, self.IdEXCURSION))
             else:
                 # Insertar los datos en la tabla excursion
                 cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida,
-                                    lugar_regreso,hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
+                                    fecha_regreso, lugar_regreso,hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                     datos_infraestructura, hospitales, otros_datos, IdGRADO)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                               (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida, lugar_regreso, 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                               (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida, fecha_regreso, lugar_regreso, 
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO))
 
@@ -999,7 +1003,7 @@ class FormularioCarga(tk.Frame):
             # Obtener los datos de la excursión seleccionada
             cursor.execute("""
                 SELECT lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida,
-                    lugar_regreso, hora_regreso, lugar_estadia, datos_acompanantes,
+                    fecha_regreso, lugar_regreso, hora_regreso, lugar_estadia, datos_acompanantes,
                     empresa_contratada, datos_infraestructura, hospitales, otros_datos, IdGRADO
                 FROM excursion
                 WHERE IdEXCURSION = ?
@@ -1014,7 +1018,7 @@ class FormularioCarga(tk.Frame):
             # Cargar datos en los Entry
             entries = [
                 self.lugar_entry,  self.localidad_entry,  self.fecha_entry,  self.proyecto_entry, self.lugardesalida_entry,
-                self.horasalida_entry, self.lugarderegreso_entry,
+                self.horasalida_entry, self.fecharegreso_entry, self.lugarderegreso_entry,
                 self.horaregreso_entry,
                 self.lugarestadia_entry, self.datosacompañantes_entry,
                 self.empresacontratada_entry, self.datosinfraestructura_entry,
@@ -1111,7 +1115,7 @@ class FormularioCarga(tk.Frame):
         #self.fechasalida_entry.delete(0, tk.END)
         self.horasalida_entry.delete(0, tk.END)
         self.lugarderegreso_entry.delete(0, tk.END)
-        #self.fecharegreso_entry.delete(0, tk.END)
+        self.fecharegreso_entry.delete(0, tk.END)
         self.horaregreso_entry.delete(0, tk.END)
         self.lugarestadia_entry.delete(0, tk.END)
         self.datosacompañantes_entry.delete(0, tk.END)
@@ -1484,7 +1488,7 @@ class FormularioCarga(tk.Frame):
         #fecha_salida = self.fecha_entry.get()
         hora_salida = self.horasalida_entry.get()
         lugar_regreso = self.lugarderegreso_entry.get()
-        #fecha_regreso = self.fecharegreso_entry.get()
+        fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
         datos_acompanantes = self.datosacompañantes_entry.get()
