@@ -70,20 +70,13 @@ class FormularioCarga(tk.Frame):
         # Agregar una etiqueta y un campo de entrada para 'Fecha'
         tk.Label(tabulador, text="Fecha de salida:").grid(
             row=0, column=1, sticky='e', padx=100, pady=5)
-        self.fecha_entry = tk.Entry(tabulador, width=10)
+        self.fecha_var = tk.StringVar()
+        self.fecha_entry = tk.Entry(tabulador, width=10, textvariable=self.fecha_var)
         self.fecha_entry.grid(row=0, column=1, sticky='e', padx=5, pady=5)
         # Añadido: Evento para formatear la fecha
         self.fecha_entry.bind("<KeyRelease>", self.formatear_fecha)
         
-        # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha alternativa:").grid(
-            row=0, column=2, sticky='e', padx=80, pady=5)
-        self.fechaalt_entry = tk.Entry(tabulador, width=10)
-        self.fechaalt_entry.grid(row=0, column=2, sticky='e', padx=15, pady=5)
-        # Añadido: Evento para formatear la fecha
-        self.fechaalt_entry.bind("<KeyRelease>", self.formatear_fechaalt)
-        
-        
+       
         # Agregar una etiqueta y un campo de entrada para 'Lugar'
         tk.Label(tabulador, text="Lugar:").grid(
             row=1, column=0, sticky='w', padx=5, pady=3)
@@ -351,113 +344,117 @@ class FormularioCarga(tk.Frame):
             pass
             
     def crear_componentes_tabulador2(self, tabulador):
-        # Agregar una etiqueta y un campo de entrada para 'Lugar'
+        # Nombre del Proyecto
         tk.Label(tabulador, text="Nombre del Proyecto:").grid(
             row=0, column=0, sticky='w', padx=5, pady=5)
-        self.proyecto_entry = tk.Entry(tabulador, width=50)
+        self.proyecto_entry = tk.Entry(tabulador, width=80)
         self.proyecto_entry.grid(
-            row=0, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=0, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.proyecto_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.proyecto_entry, 47, tabulador))
+            self.proyecto_entry, 60, tabulador))
 
-        # Agregar una etiqueta a Lugar de salida
-        tk.Label(tabulador, text="Lugar de salida: E.P. Nº 43").grid(
+        # Lugar de salida
+        tk.Label(tabulador, text="Lugar de salida:").grid(
             row=1, column=0, sticky='w', padx=5, pady=2)
-
-        # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de salida:").grid(
+        self.lugardesalida_entry = tk.Entry(tabulador, width=25)
+        self.lugardesalida_entry.grid(
             row=1, column=1, sticky='w', padx=5, pady=5)
-        self.fechasalida_entry = tk.Entry(tabulador, width=15)
-        self.fechasalida_entry.grid(
-            row=1, column=1, sticky='w', padx=125, pady=5)
-        self.fechasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.fechasalida_entry, 15, tabulador))
+        self.lugardesalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.lugardesalida_entry, 28, tabulador))
 
+        # Fecha de salida
+        tk.Label(tabulador, text="Fecha de salida:").grid(
+            row=1, column=2, sticky='e', padx=2, pady=5)
+        tk.Label(tabulador, textvariable=self.fecha_var).grid( 
+            row=1, column=3, sticky='w', padx=2, pady=5)
+        
+        # Hora de salida
         tk.Label(tabulador, text="Hora de salida:").grid(
-            row=1, column=2, sticky='w', padx=5, pady=2)
-        self.horasalida_entry = tk.Entry(tabulador, width=10)
+            row=1, column=4, sticky='e', padx=2, pady=5)
+        self.horasalida_entry = tk.Entry(tabulador, width=8)
         self.horasalida_entry.grid(
-            row=1, column=2, sticky='W', padx=105, pady=2)
+            row=1, column=5, sticky='w', padx=2, pady=5) 
         self.horasalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.horasalida_entry, 10, tabulador))
+            self.horasalida_entry, 5, tabulador))
 
-        # Agregar una etiqueta a Lugar de salida
-        tk.Label(tabulador, text="Lugar de regreso: E.P. Nº 43").grid(
+        # Lugar de regreso
+        tk.Label(tabulador, text="Lugar de regreso:").grid(
             row=2, column=0, sticky='w', padx=5, pady=2)
-
-        # Agregar una etiqueta y un campo de entrada para 'Fecha'
-        tk.Label(tabulador, text="Fecha de regreso:").grid(
+        self.lugarderegreso_entry = tk.Entry(tabulador, width=25)
+        self.lugarderegreso_entry.grid(
             row=2, column=1, sticky='w', padx=5, pady=5)
-        self.fecharegreso_entry = tk.Entry(tabulador, width=15)
-        self.fecharegreso_entry.grid(
-            row=2, column=1, sticky='w', padx=125, pady=5)
-        self.fecharegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.fecharegreso_entry, 15, tabulador))
+        self.lugarderegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+            self.lugarderegreso_entry, 28, tabulador))
 
+        # Fecha de regreso
+        tk.Label(tabulador, text="Fecha de regreso:").grid(
+            row=2, column=2, sticky='e', padx=2, pady=5)
+        tk.Label(tabulador, textvariable=self.fecha_var).grid( 
+            row=2, column=3, sticky='w', padx=2, pady=5)
+        
+        # Hora de regreso
         tk.Label(tabulador, text="Hora de regreso:").grid(
-            row=2, column=2, sticky='w', padx=5, pady=2)
-        self.horaregreso_entry = tk.Entry(tabulador, width=10)
+            row=2, column=4, sticky='e', padx=2, pady=2)
+        self.horaregreso_entry = tk.Entry(tabulador, width=8)
         self.horaregreso_entry.grid(
-            row=2, column=2, sticky='W', padx=105, pady=2)
+            row=2, column=5, sticky='w', padx=2, pady=2)
         self.horaregreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.horaregreso_entry, 10, tabulador))
-        # Lugares de estadía
+            self.horaregreso_entry, 5, tabulador))
+
+        # Lugar de estadía
         tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
-        self.lugarestadia_entry = tk.Entry(tabulador, width=46)
+        self.lugarestadia_entry = tk.Entry(tabulador, width=60)
         self.lugarestadia_entry.grid(
-            row=3, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=3, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.lugarestadia_entry, 40, tabulador))
+            self.lugarestadia_entry, 50, tabulador))
 
-        # Nombre y tel. de los acompañantes
+        # Nombres y tel. de acompañantes
         tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(
             row=4, column=0, sticky='w', padx=5, pady=5)
-        self.datosacompañantes_entry = tk.Entry(tabulador, width=46)
+        self.datosacompañantes_entry = tk.Entry(tabulador, width=60)
         self.datosacompañantes_entry.grid(
-            row=4, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=4, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosacompañantes_entry, 40, tabulador))
+            self.datosacompañantes_entry, 50, tabulador))
+
         # Empresa y/o empresas contratadas
         tk.Label(tabulador, text="Empresa/s contratada/s\n(nombre, dirección, tel.:").grid(
             row=5, column=0, sticky='w', padx=5, pady=5)
-        self.empresacontratada_entry = tk.Entry(tabulador, width=102)
+        self.empresacontratada_entry = tk.Entry(tabulador, width=80)
         self.empresacontratada_entry.grid(
-            row=5, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=5, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.empresacontratada_entry, 98, tabulador))
+            self.empresacontratada_entry, 123, tabulador))
 
         # Otros datos de la infraestructura disponible
         tk.Label(tabulador, text="Otros datos de la\ninfraestructura disponible:").grid(
             row=6, column=0, sticky='w', padx=5, pady=5)
-        self.datosinfraestructura_entry = tk.Entry(tabulador, width=124)
+        self.datosinfraestructura_entry = tk.Entry(tabulador, width=80)
         self.datosinfraestructura_entry.grid(
-            row=6, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=6, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosinfraestructura_entry, 116, tabulador))
+            self.datosinfraestructura_entry, 147, tabulador))
 
-        # Hospitales y centros asistenciales cercanos\n(direcciones y teléfonos)
+        # Hospitales y centros asistenciales cercanos
         tk.Label(tabulador, text="Hospitales y centros asist.\ncercanos(direcciones y tel.:").grid(
             row=7, column=0, sticky='w', padx=5, pady=5)
-        self.hospitales_entry = tk.Entry(tabulador, width=98)
+        self.hospitales_entry = tk.Entry(tabulador, width=80)
         self.hospitales_entry.grid(
-            row=7, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=7, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.hospitales_entry, 95, tabulador))
+            self.hospitales_entry, 119, tabulador))
 
-        # Otros datos de la interés
+        # Otros datos de interés
         tk.Label(tabulador, text="Otros datos de interés:").grid(
             row=8, column=0, sticky='w', padx=5, pady=5)
-        self.otrosdatos_entry = tk.Entry(tabulador, width=124)
+        self.otrosdatos_entry = tk.Entry(tabulador, width=80)
         self.otrosdatos_entry.grid(
-            row=8, column=1, columnspan=2, sticky='w', padx=5, pady=5)
+            row=8, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.otrosdatos_entry, 135, tabulador))
-
-        # Botón para actualizar el Label con el dato ingresado en Entry
-        # self.btn_guardar_2 = tk.Button(
-        #     tabulador, text="Guardar", command=self.guardar_sqlite)
-        # self.btn_guardar_2.grid(row=10, column=1, sticky='e', padx=5, pady=5)
+            self.otrosdatos_entry, 170, tabulador))
+         
 
     def mostrar_advertencia(self, texto):
 
@@ -470,8 +467,8 @@ class FormularioCarga(tk.Frame):
 
         try:
             # 1. Obtener datos de la excursión original
-            cursor.execute("SELECT lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, \
-                            fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada, \
+            cursor.execute("SELECT lugar, localidad, fecha, nombre_proyecto, hora_salida, \
+                             hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada, \
                             datos_infraestructura, hospitales, otros_datos, IdGRADO \
                             FROM excursion WHERE IdEXCURSION = ?", (id_excursion_original,))
             datos_excursion = cursor.fetchone()
@@ -481,10 +478,10 @@ class FormularioCarga(tk.Frame):
                 return
 
             # 2. Insertar nueva excursión (idéntica a la original, salvo que podés cambiar fecha/lugar si querés)
-            cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
-                                fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
+            cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, hora_salida,
+                                hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, IdGRADO)
-                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', datos_excursion)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''', datos_excursion)
 
             nuevo_id_excursion = cursor.lastrowid
 
@@ -771,9 +768,11 @@ class FormularioCarga(tk.Frame):
         localidad = self.localidad_entry.get()
         fecha = self.fecha_entry.get()
         nombre_proyecto = self.proyecto_entry.get()
-        fecha_salida = self.fechasalida_entry.get()
+        lugar_salida = self.lugardesalida_entry.get()
+        #fecha_salida = self.fechasalida_entry.get()
         hora_salida = self.horasalida_entry.get()
-        fecha_regreso = self.fecharegreso_entry.get()
+        lugar_regreso = self.lugarderegreso_entry.get()
+        #fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
         datos_acompanantes = self.datosacompañantes_entry.get()
@@ -805,9 +804,7 @@ class FormularioCarga(tk.Frame):
                                 localidad TEXT,
                                 fecha TEXT,
                                 nombre_proyecto TEXT,
-                                fecha_salida TEXT,
                                 hora_salida TEXT,
-                                fecha_regreso TEXT,
                                 hora_regreso TEXT,
                                 lugar_estadia TEXT,
                                 datos_acompanantes TEXT,
@@ -847,20 +844,20 @@ class FormularioCarga(tk.Frame):
 
             if self.IdEXCURSION:
                 # Actualizar los datos en la tabla excursion
-                cursor.execute('''UPDATE excursion SET lugar = ?, localidad = ?, fecha = ?, nombre_proyecto = ?, fecha_salida = ?, hora_salida = ?,
-                                    fecha_regreso = ?, hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
+                cursor.execute('''UPDATE excursion SET lugar = ?, localidad = ?, fecha = ?, nombre_proyecto = ?, lugar_salida = ?, hora_salida = ?,
+                                  lugar_regreso = ?,  hora_regreso = ?, lugar_estadia = ?, datos_acompanantes = ?, empresa_contratada = ?,
                                     datos_infraestructura = ?, hospitales = ?, otros_datos = ?, IdGRADO = ?
                                     WHERE IdEXCURSION = ?''',
-                               (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                               (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida, lugar_regreso,
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO, self.IdEXCURSION))
             else:
                 # Insertar los datos en la tabla excursion
-                cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
-                                    fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
+                cursor.execute('''INSERT INTO excursion (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida,
+                                    lugar_regreso,hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                     datos_infraestructura, hospitales, otros_datos, IdGRADO)
                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                               (lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida, fecha_regreso,
+                               (lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida, lugar_regreso, 
                                 hora_regreso, lugar_estadia, datos_acompanantes, empresa_contratada,
                                 datos_infraestructura, hospitales, otros_datos, self.IdGRADO))
 
@@ -1001,8 +998,8 @@ class FormularioCarga(tk.Frame):
 
             # Obtener los datos de la excursión seleccionada
             cursor.execute("""
-                SELECT lugar, localidad, fecha, nombre_proyecto, fecha_salida, hora_salida,
-                    fecha_regreso, hora_regreso, lugar_estadia, datos_acompanantes,
+                SELECT lugar, localidad, fecha, nombre_proyecto, lugar_salida, hora_salida,
+                    lugar_regreso, hora_regreso, lugar_estadia, datos_acompanantes,
                     empresa_contratada, datos_infraestructura, hospitales, otros_datos, IdGRADO
                 FROM excursion
                 WHERE IdEXCURSION = ?
@@ -1016,9 +1013,9 @@ class FormularioCarga(tk.Frame):
 
             # Cargar datos en los Entry
             entries = [
-                self.lugar_entry,  self.localidad_entry,  self.fecha_entry,  self.proyecto_entry,
-                self.fechasalida_entry, self.horasalida_entry,
-                self.fecharegreso_entry, self.horaregreso_entry,
+                self.lugar_entry,  self.localidad_entry,  self.fecha_entry,  self.proyecto_entry, self.lugardesalida_entry,
+                self.horasalida_entry, self.lugarderegreso_entry,
+                self.horaregreso_entry,
                 self.lugarestadia_entry, self.datosacompañantes_entry,
                 self.empresacontratada_entry, self.datosinfraestructura_entry,
                 self.hospitales_entry, self.otrosdatos_entry
@@ -1110,9 +1107,11 @@ class FormularioCarga(tk.Frame):
         self.fecha_entry.delete(0, tk.END)
         self.combobox_excursion.set("")  # Limpiar el combobox de excursiones   
         self.proyecto_entry.delete(0, tk.END)
-        self.fechasalida_entry.delete(0, tk.END)
+        self.lugardesalida_entry.delete(0, tk.END)
+        #self.fechasalida_entry.delete(0, tk.END)
         self.horasalida_entry.delete(0, tk.END)
-        self.fecharegreso_entry.delete(0, tk.END)
+        self.lugarderegreso_entry.delete(0, tk.END)
+        #self.fecharegreso_entry.delete(0, tk.END)
         self.horaregreso_entry.delete(0, tk.END)
         self.lugarestadia_entry.delete(0, tk.END)
         self.datosacompañantes_entry.delete(0, tk.END)
@@ -1468,6 +1467,7 @@ class FormularioCarga(tk.Frame):
 
         # Obtener la fecha desglosada del TextBox del formulario
         dia, mes, fecha_formateada = self.obtener_mes_letras(self.fecha_entry.get())
+        
 
         # Datos del alumno desde el registro del TreeView
         nombre = registro[1]
@@ -1480,9 +1480,11 @@ class FormularioCarga(tk.Frame):
         lugar = self.lugar_entry.get()  # Lugar tomado directamente del TextBox
         localidad = self.localidad_entry.get()
         proyecto = self.proyecto_entry.get()
-        fecha_salida = self.fechasalida_entry.get()
+        lugar_salida = self.lugardesalida_entry.get()
+        #fecha_salida = self.fecha_entry.get()
         hora_salida = self.horasalida_entry.get()
-        fecha_regreso = self.fecharegreso_entry.get()
+        lugar_regreso = self.lugarderegreso_entry.get()
+        #fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
         datos_acompanantes = self.datosacompañantes_entry.get()
@@ -1493,13 +1495,13 @@ class FormularioCarga(tk.Frame):
 
         # Divido los textos, que rebasan el primer renglón y tienen dos entry
         primera_linea_empresa_contratada, segunda_linea_proyecto_empresa_contratada = self.dividir_texto(
-            empresa_contratada, 20, 78)
+            empresa_contratada, 23, 100)
         primera_linea_datos_infraestructura, segunda_linea_datos_infraestructura = self.dividir_texto(
-            datos_infraestructura, 39, 77)
+            datos_infraestructura, 47, 100)
         primera_linea_datos_hospitales, segunda_linea_datos_hospitales = self.dividir_texto(
-            hospitales, 17, 77)
+            hospitales, 19, 100)
         primera_linea_otros_datos, segunda_linea_otros_datos = self.dividir_texto(
-            otros_datos, 57, 78)
+            otros_datos, 70, 100)
 
         # Primera página - datos completos del alumno y encabezado
         c.drawImage(fondo_hoja_1, 0, 0, width=A4[0], height=A4[1])
@@ -1520,16 +1522,16 @@ class FormularioCarga(tk.Frame):
         # colocar datos
 
         c.drawString(255.15, 591, proyecto)
-        c.drawString(85, 540, establecimiento)
-        c.drawString(110,540, numero_establecimiento)
-        c.drawString(144, 540, f",{fecha_formateada}, ")
+        c.drawString(85, 540, lugar_salida)
+        #c.drawString(110,540, numero_establecimiento)
+        c.drawString(240, 540, f",{fecha_formateada}, ")
         #c.drawString(180, 540, f"{dia},")
-        c.drawString(290, 540, hora_salida + " hs.")
-        c.drawString(227, 514, establecimiento)
-        c.drawString(250, 514, numero_establecimiento)
-        c.drawString(280, 514, f",{fecha_formateada}, ")
+        c.drawString(356, 540, hora_salida + " hs.")
+        c.drawString(227, 514, lugar_regreso)
+        #c.drawString(250, 514, numero_establecimiento)
+        c.drawString(378, 514, f",{fecha_formateada}, ")
         #c.drawString(320, 514, f"{dia},")
-        c.drawString(420, 514, hora_regreso + " hs.")
+        c.drawString(494, 514, hora_regreso + " hs.")
         c.drawString(294, 491, lugar_estadia)
         c.drawString(294, 466, datos_acompanantes)
         c.drawString(406, 440, primera_linea_empresa_contratada)
