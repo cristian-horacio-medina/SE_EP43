@@ -1388,6 +1388,7 @@ class FormularioCarga(tk.Frame):
     
     def obtener_mes_letras(self, fecha_str):
         fecha = datetime.strptime(fecha_str, "%d/%m/%Y")
+        
         # Obtener el día, mes y día de la semana en formato texto
         dia_semana = fecha.strftime("%A")  # Día de la semana completo
         dia = fecha.day  # Día del mes
@@ -1425,8 +1426,7 @@ class FormularioCarga(tk.Frame):
         
         # Formatear la fecha completa
         fecha_formateada = f"{dia} de {mes} de {fecha.year}"
-        #messagebox.showinfo("Información", f"Fecha: {fecha_formateada}\nDía de la semana: {dia_semana}")
-
+        
         return dia, mes, fecha_formateada
 
     def get_resource_path(self, relative_path):
@@ -1471,6 +1471,8 @@ class FormularioCarga(tk.Frame):
 
         # Obtener la fecha desglosada del TextBox del formulario
         dia, mes, fecha_formateada = self.obtener_mes_letras(self.fecha_entry.get())
+        
+        dia_regreso, mes_regreso, fecha_regreso_formateada = self.obtener_mes_letras(self.fecharegreso_entry.get())
         
 
         # Datos del alumno desde el registro del TreeView
@@ -1533,7 +1535,7 @@ class FormularioCarga(tk.Frame):
         c.drawString(356, 540, hora_salida + " hs.")
         c.drawString(227, 514, lugar_regreso)
         #c.drawString(250, 514, numero_establecimiento)
-        c.drawString(378, 514, f",{fecha_formateada}, ")
+        c.drawString(378, 514, f"{fecha_regreso_formateada}, ")
         #c.drawString(320, 514, f"{dia},")
         c.drawString(494, 514, hora_regreso + " hs.")
         c.drawString(294, 491, lugar_estadia)
