@@ -356,7 +356,7 @@ class FormularioCarga(tk.Frame):
         # Lugar de salida
         tk.Label(tabulador, text="Lugar de salida:").grid(
             row=1, column=0, sticky='w', padx=5, pady=2)
-        self.lugardesalida_entry = tk.Entry(tabulador, width=25)
+        self.lugardesalida_entry = tk.Entry(tabulador, width=30)
         self.lugardesalida_entry.grid(
             row=1, column=1, sticky='w', padx=5, pady=5)
         self.lugardesalida_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
@@ -380,7 +380,7 @@ class FormularioCarga(tk.Frame):
         # Lugar de regreso
         tk.Label(tabulador, text="Lugar de regreso:").grid(
             row=2, column=0, sticky='w', padx=5, pady=2)
-        self.lugarderegreso_entry = tk.Entry(tabulador, width=25)
+        self.lugarderegreso_entry = tk.Entry(tabulador, width=30)
         self.lugarderegreso_entry.grid(
             row=2, column=1, sticky='w', padx=5, pady=5)
         self.lugarderegreso_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
@@ -389,7 +389,7 @@ class FormularioCarga(tk.Frame):
         # Fecha de regreso
         tk.Label(tabulador, text="Fecha de regreso:").grid(
             row=2, column=2, sticky='e', padx=2, pady=5)
-        self.fecharegreso_entry = tk.Entry(tabulador, width=8)
+        self.fecharegreso_entry = tk.Entry(tabulador, width=10)
         self.fecharegreso_entry.grid(
             row=2, column=3, sticky='w', padx=2, pady=2)
         # Añadido: Evento para formatear la fecha
@@ -407,7 +407,7 @@ class FormularioCarga(tk.Frame):
         # Lugar de estadía
         tk.Label(tabulador, text="Lugar de estadía\n(domicilios y tel.):").grid(
             row=3, column=0, sticky='w', padx=5, pady=5)
-        self.lugarestadia_entry = tk.Entry(tabulador, width=60)
+        self.lugarestadia_entry = tk.Entry(tabulador, width=52)
         self.lugarestadia_entry.grid(
             row=3, column=1, columnspan=5, sticky='w', padx=5, pady=5)
         self.lugarestadia_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
@@ -416,48 +416,48 @@ class FormularioCarga(tk.Frame):
         # Nombres y tel. de acompañantes
         tk.Label(tabulador, text="Nombres y tel.\nde acompañantes:").grid(
             row=4, column=0, sticky='w', padx=5, pady=5)
-        self.datosacompañantes_entry = tk.Entry(tabulador, width=60)
+        self.datosacompañantes_entry = tk.Text(tabulador, width=52, height=1, wrap=tk.WORD)
         self.datosacompañantes_entry.grid(
             row=4, column=1, columnspan=5, sticky='w', padx=5, pady=5)
-        self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+        self.datosacompañantes_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres_text(
             self.datosacompañantes_entry, 50, tabulador))
 
         # Empresa y/o empresas contratadas
         tk.Label(tabulador, text="Empresa/s contratada/s\n(nombre, dirección, tel.:").grid(
             row=5, column=0, sticky='w', padx=5, pady=5)
-        self.empresacontratada_entry = tk.Entry(tabulador, width=80)
+        self.empresacontratada_entry = tk.Text(tabulador, width=90, height=2, wrap=tk.WORD)
         self.empresacontratada_entry.grid(
             row=5, column=1, columnspan=5, sticky='w', padx=5, pady=5)
-        self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.empresacontratada_entry, 123, tabulador))
+        self.empresacontratada_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres_text(
+            self.empresacontratada_entry, 124, tabulador))
 
         # Otros datos de la infraestructura disponible
         tk.Label(tabulador, text="Otros datos de la\ninfraestructura disponible:").grid(
             row=6, column=0, sticky='w', padx=5, pady=5)
-        self.datosinfraestructura_entry = tk.Entry(tabulador, width=80)
+        self.datosinfraestructura_entry = tk.Text(tabulador, width=90, height=2, wrap=tk.WORD)
         self.datosinfraestructura_entry.grid(
             row=6, column=1, columnspan=5, sticky='w', padx=5, pady=5)
-        self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.datosinfraestructura_entry, 147, tabulador))
+        self.datosinfraestructura_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres_text(
+            self.datosinfraestructura_entry, 148, tabulador))
 
         # Hospitales y centros asistenciales cercanos
         tk.Label(tabulador, text="Hospitales y centros asist.\ncercanos(direcciones y tel.:").grid(
             row=7, column=0, sticky='w', padx=5, pady=5)
-        self.hospitales_entry = tk.Entry(tabulador, width=80)
+        self.hospitales_entry = tk.Text(tabulador, width=90, height=2, wrap=tk.WORD)
         self.hospitales_entry.grid(
             row=7, column=1, columnspan=5, sticky='w', padx=5, pady=5)
-        self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
+        self.hospitales_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres_text(
             self.hospitales_entry, 119, tabulador))
 
         # Otros datos de interés
         tk.Label(tabulador, text="Otros datos de interés:").grid(
             row=8, column=0, sticky='w', padx=5, pady=5)
-        self.otrosdatos_entry = tk.Entry(tabulador, width=80)
+        self.otrosdatos_entry = tk.Text(tabulador, width=90, height=3, wrap=tk.WORD)
         self.otrosdatos_entry.grid(
             row=8, column=1, columnspan=5, sticky='w', padx=5, pady=5)
-        self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres(
-            self.otrosdatos_entry, 170, tabulador))
-         
+        self.otrosdatos_entry.bind("<KeyRelease>", lambda e: self.limitar_caracteres_text(
+            self.otrosdatos_entry, 190, tabulador))
+                
 
     def mostrar_advertencia(self, texto):
 
@@ -526,6 +526,21 @@ class FormularioCarga(tk.Frame):
             entry.delete(limite, tk.END)
             self.mostrar_advertencia(
                 f"El límite de {limite} caracteres ha sido superado.")
+            
+    def limitar_caracteres_text(self, text_widget, max_chars, parent):
+        """Limita caracteres en widgets Text (multilínea)"""
+        try:
+            contenido = text_widget.get("1.0", "end-1c")
+            
+            if len(contenido) > max_chars:
+                text_widget.delete("1.0", tk.END)
+                text_widget.insert("1.0", contenido[:max_chars])
+                text_widget.mark_set(tk.INSERT, tk.END)
+                parent.bell()
+                self.mostrar_advertencia(
+                    f"El límite de {max_chars} caracteres ha sido superado.")
+        except tk.TclError:
+            pass
 
     def formatear_fecha(self, event):  # Nuevo método para formatear la fecha
         fecha = self.fecha_entry.get().replace("/", "")
@@ -761,6 +776,7 @@ class FormularioCarga(tk.Frame):
 
         # Actualizar la lista de excursiones en el combobox
         self.actualizar_lista_excursiones()
+        
     def guardar_sqlite(self):
         # Obtén los registros desde el Treeview
         registros = [self.tree.item(child)["values"]
@@ -778,11 +794,12 @@ class FormularioCarga(tk.Frame):
         fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
-        datos_acompanantes = self.datosacompañantes_entry.get()
-        empresa_contratada = self.empresacontratada_entry.get()
-        datos_infraestructura = self.datosinfraestructura_entry.get()
-        hospitales = self.hospitales_entry.get()
-        otros_datos = self.otrosdatos_entry.get()
+         #Obtener valores de los campos Text (multilínea)
+        datos_acompanantes = self.datosacompañantes_entry.get("1.0", "end-1c").strip()
+        empresa_contratada = self.empresacontratada_entry.get("1.0", "end-1c").strip()
+        datos_infraestructura = self.datosinfraestructura_entry.get("1.0", "end-1c").strip()
+        hospitales = self.hospitales_entry.get("1.0", "end-1c").strip()
+        otros_datos = self.otrosdatos_entry.get("1.0", "end-1c").strip()
 
         # Obtener el IdGRADO del combobox_grado
         grado_seleccionado = self.combobox_grado.get()
@@ -973,11 +990,6 @@ class FormularioCarga(tk.Frame):
             messagebox.showerror("Error", f"No se pudo actualizar la lista de excursiones: {e}")
 
 
-    # def guardar_y_reiniciar(self):
-    #     self.guardar_sqlite()
-    #     self.reiniciar_formulario()
-    #     self.combobox_grado.focus()  # Ubica el cursor en el campo Lugar
-
     def cargar_desde_sqlite(self, event=None):
         # Verificar si hay una excursión seleccionada
         excursion_seleccionada = self.combobox_excursion.get()
@@ -988,8 +1000,7 @@ class FormularioCarga(tk.Frame):
             return
 
         # Guardar el ID de la excursión en la instancia
-        self.IdEXCURSION = self.excursiones.get(
-            excursion_seleccionada)  # Ahora sí se guarda bien
+        self.IdEXCURSION = self.excursiones.get(excursion_seleccionada)
 
         # Ruta fija de la base de datos
         db_path = os.path.join(os.path.expanduser(
@@ -1015,24 +1026,38 @@ class FormularioCarga(tk.Frame):
                     "Error", "No se encontraron datos en la tabla principal.")
                 return
 
-            # Cargar datos en los Entry
-            entries = [
-                self.lugar_entry,  self.localidad_entry,  self.fecha_entry,  self.proyecto_entry, self.lugardesalida_entry,
-                self.horasalida_entry, self.fecharegreso_entry, self.lugarderegreso_entry,
-                self.horaregreso_entry,
-                self.lugarestadia_entry, self.datosacompañantes_entry,
-                self.empresacontratada_entry, self.datosinfraestructura_entry,
-                self.hospitales_entry, self.otrosdatos_entry
+            # Cargar datos en los widgets
+            # Los primeros 10 son Entry normales
+            entries_normales = [
+                self.lugar_entry, self.localidad_entry, self.fecha_entry, 
+                self.proyecto_entry, self.lugardesalida_entry,
+                self.horasalida_entry, self.fecharegreso_entry, 
+                self.lugarderegreso_entry, self.horaregreso_entry,
+                self.lugarestadia_entry
+            ]
+            
+            # Los siguientes son Text (multilínea)
+            entries_text = [
+                self.datosacompañantes_entry,
+                self.empresacontratada_entry, 
+                self.datosinfraestructura_entry,
+                self.hospitales_entry, 
+                self.otrosdatos_entry
             ]
 
-            # Excluimos el valor 'IdGRADO' que está al final
-            for i, value in enumerate(excursion[:-1]):
-                entries[i].delete(0, tk.END)
-                entries[i].insert(0, value if value is not None else "")
+            # Cargar Entry normales (índices 0-9)
+            for i in range(10):
+                entries_normales[i].delete(0, tk.END)
+                entries_normales[i].insert(0, excursion[i] if excursion[i] is not None else "")
+
+            # Cargar Text widgets (índices 10-14)
+            for i, widget in enumerate(entries_text, start=10):
+                widget.delete("1.0", tk.END)
+                widget.insert("1.0", excursion[i] if excursion[i] is not None else "")
 
             # Obtener la descripción del grado usando IdGRADO
-            IdGRADO = excursion[-1]  # El último valor en la tupla es 'IdGRADO'
-            self.IdGRADO = IdGRADO  # Guardar IdGRADO en la instancia
+            IdGRADO = excursion[-1]
+            self.IdGRADO = IdGRADO
             cursor.execute("""
                 SELECT grado || seccion || turno 
                 FROM grado 
@@ -1041,7 +1066,6 @@ class FormularioCarga(tk.Frame):
             grado_desc = cursor.fetchone()
 
             if grado_desc:
-                # Cargar la descripción del grado en el combo_grado
                 self.combobox_grado.set(
                     grado_desc[0] if grado_desc[0] is not None else "")
             else:
@@ -1049,7 +1073,7 @@ class FormularioCarga(tk.Frame):
 
             # Bloquear el ComboBox para evitar cambios accidentales
             self.combobox_grado.config(state="disabled")
-            #messagebox.showinfo(self.IdGRADO, f"El ID del grado seleccionado es: {self.IdGRADO}")
+
             # Limpiar Treeview
             for item in self.tree.get_children():
                 self.tree.delete(item)
@@ -1090,7 +1114,6 @@ class FormularioCarga(tk.Frame):
             registros = cursor.fetchall()
 
             for registro in registros:
-                # Agregar un valor vacío al inicio de cada registro
                 registro_desplazado = ("",) + registro
                 self.tree.insert("", "end", values=registro_desplazado)
 
@@ -1102,6 +1125,7 @@ class FormularioCarga(tk.Frame):
         finally:
             if conn:
                 conn.close()
+            
     def reiniciar_formulario(self):
         self.combobox_grado.focus()
         self.combobox_grado.state(["!disabled"])
@@ -1493,21 +1517,21 @@ class FormularioCarga(tk.Frame):
         fecha_regreso = self.fecharegreso_entry.get()
         hora_regreso = self.horaregreso_entry.get()
         lugar_estadia = self.lugarestadia_entry.get()
-        datos_acompanantes = self.datosacompañantes_entry.get()
-        empresa_contratada = self.empresacontratada_entry.get()
-        datos_infraestructura = self.datosinfraestructura_entry.get()
-        hospitales = self.hospitales_entry.get()
-        otros_datos = self.otrosdatos_entry.get()
+        datos_acompanantes = self.datosacompañantes_entry.get("1.0", "end-1c").strip()
+        empresa_contratada = self.empresacontratada_entry.get("1.0", "end-1c").strip()
+        datos_infraestructura = self.datosinfraestructura_entry.get("1.0", "end-1c").strip()
+        hospitales = self.hospitales_entry.get("1.0", "end-1c").strip()
+        otros_datos = self.otrosdatos_entry.get("1.0", "end-1c").strip()
 
         # Divido los textos, que rebasan el primer renglón y tienen dos entry
         primera_linea_empresa_contratada, segunda_linea_proyecto_empresa_contratada = self.dividir_texto(
-            empresa_contratada, 23, 100)
+            empresa_contratada, 24, 100)
         primera_linea_datos_infraestructura, segunda_linea_datos_infraestructura = self.dividir_texto(
-            datos_infraestructura, 47, 100)
+            datos_infraestructura, 48, 100)
         primera_linea_datos_hospitales, segunda_linea_datos_hospitales = self.dividir_texto(
             hospitales, 19, 100)
         primera_linea_otros_datos, segunda_linea_otros_datos = self.dividir_texto(
-            otros_datos, 70, 100)
+            otros_datos, 72, 100)
 
         # Primera página - datos completos del alumno y encabezado
         c.drawImage(fondo_hoja_1, 0, 0, width=A4[0], height=A4[1])
