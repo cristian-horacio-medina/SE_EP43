@@ -1,4 +1,4 @@
-# Sistema de Anexos Escolares
+# Sistema de generación de documentación para salidas escolares 
 
 Generación automática de Anexos V y VI para salidas educativas según normativa del Ministerio de Educación de Buenos Aires.
 
@@ -13,6 +13,9 @@ Generación automática de Anexos V y VI para salidas educativas según normativ
 - Generación de Anexo V (autorización de padres)
 - Generación de Anexo VI (listado oficial)
 - Exportación a PDF
+
+# Usuario de prueba
+admin/admin123
 
 ## Estado
 ✅ En uso en escuela desde 2024
