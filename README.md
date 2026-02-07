@@ -16,3 +16,6 @@ Generación automática de Anexos V y VI para salidas educativas según normativ
 
 ## Estado
 ✅ En uso en escuela desde 2024
+
+
+pyinstaller --noconfirm --onefile --windowed --add-data "resources;resources" --add-data "Excursion.db;." login.py
